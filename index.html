@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>MakerPixel Techsystem | Gestão Financeira & Integração Contábil</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230F2B48'/><rect x='6' y='14' width='4' height='12' rx='1' fill='%2300A3E0'/><rect x='13' y='8' width='4' height='18' rx='1' fill='%2338BDF8'/><rect x='20' y='11' width='4' height='15' rx='1' fill='%2300A3E0'/><rect x='6' y='5' width='5' height='5' rx='1' fill='%2338BDF8'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- PDF.js CDN for reliable client-side bank statement parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+      try {
+        const theme = localStorage.getItem('makerpixel_theme') || 'dark';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="./assets/index-DYudSoK_.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Czi-m6zd.css">
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen antialiased selection:bg-cyan-500 selection:text-white">
+    <div id="root"></div>
+  </body>
+</html>
