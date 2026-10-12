@@ -8,6 +8,9 @@ import { UnidadePage } from './pages/UnidadePage';
 import { CadastrosPage } from './pages/CadastrosPage';
 import { ConciliacaoPage } from './pages/ConciliacaoPage';
 import { AdminPage } from './pages/AdminPage';
+import { ApuracaoIcmsPage } from './pages/ApuracaoIcmsPage';
+import { AuditorIbsCbsPage } from './pages/AuditorIbsCbsPage';
+import { VencimentosPage } from './pages/VencimentosPage';
 
 import { NovaContaModal } from './components/modals/NovaContaModal';
 import { NovaUnidadeModal } from './components/modals/NovaUnidadeModal';
@@ -56,7 +59,31 @@ export function App() {
   const [isNovaUnidadeOpen, setIsNovaUnidadeOpen] = useState(false);
   const [isImportPlanilhaOpen, setIsImportPlanilhaOpen] = useState(false);
   const [isImportExtratosOpen, setIsImportExtratosOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstallPwa, setCanInstallPwa] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
+
+  // PWA beforeinstallprompt handler
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstallPwa(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setCanInstallPwa(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   // Inicializa tema
   useEffect(() => {
@@ -537,6 +564,15 @@ export function App() {
   if (activeView === 'conciliacao') {
     viewTitle = 'Conciliação Bancária';
     viewSubtitle = 'Extratos e Planilhas';
+  } else if (activeView === 'apuracao-icms') {
+    viewTitle = 'Apuração de ICMS';
+    viewSubtitle = 'Fiscal & Tributário';
+  } else if (activeView === 'auditor-ibs-cbs') {
+    viewTitle = 'Auditor IBS / CBS';
+    viewSubtitle = 'Reforma Tributária LC 214';
+  } else if (activeView === 'vencimentos') {
+    viewTitle = 'Painel de Vencimentos';
+    viewSubtitle = 'Compliance & Prazos';
   } else if (activeView === 'admin') {
     viewTitle = 'Área Administrativa';
     viewSubtitle = 'Configurações do Sistema';
@@ -557,7 +593,7 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#060B13] text-slate-800 dark:text-slate-100 font-sans transition-colors">
       {/* Sidebar MakerPixel Tech */}
       <Sidebar
         activeView={activeView}
@@ -569,10 +605,14 @@ export function App() {
         onNovaUnidade={() => setIsNovaUnidadeOpen(true)}
         userRole={session.user.role}
         countsByConta={countsByConta}
+        isOpenMobile={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
+        onInstallPwa={handleInstallPwa}
+        canInstallPwa={canInstallPwa}
       />
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         <Topbar
           viewTitle={viewTitle}
           viewSubtitle={viewSubtitle}
@@ -594,10 +634,13 @@ export function App() {
               setSession({ ...s });
             }
           }}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          onInstallPwa={handleInstallPwa}
+          canInstallPwa={canInstallPwa}
         />
 
         {/* Content View Router */}
-        <main className="flex-1 overflow-y-auto bg-slate-100/60 dark:bg-slate-950">
+        <main className="flex-1 overflow-y-auto bg-slate-100/60 dark:bg-[#060B13]">
           {activeView === 'master' && (
             <MasterPage
               competencia={competencia}
@@ -700,6 +743,12 @@ export function App() {
               }}
             />
           )}
+
+          {activeView === 'apuracao-icms' && <ApuracaoIcmsPage />}
+
+          {activeView === 'auditor-ibs-cbs' && <AuditorIbsCbsPage />}
+
+          {activeView === 'vencimentos' && <VencimentosPage />}
 
           {activeView === 'admin' && <AdminPage currentUser={session.user} />}
         </main>

@@ -2,7 +2,7 @@ import React from 'react';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  variant?: 'auto' | 'light' | 'dark';
+  variant?: 'auto' | 'light' | 'dark' | 'badge-white';
   showBadge?: boolean;
   className?: string;
 }
@@ -13,72 +13,123 @@ export const Logo: React.FC<LogoProps> = ({
   showBadge = false,
   className = '',
 }) => {
-  const sizeMap = {
-    sm: { scale: 'scale-75 origin-left', h: 'h-8' },
-    md: { scale: 'scale-90 origin-left', h: 'h-11' },
-    lg: { scale: 'scale-100 origin-left', h: 'h-14' },
-    xl: { scale: 'scale-125 origin-left', h: 'h-20' },
-  };
+  const isWhiteBadge = variant === 'badge-white' || (showBadge && variant !== 'dark');
 
-  const currentSize = sizeMap[size];
+  // Cores de texto
+  let makerTextColor = 'text-slate-900 dark:text-white';
+  let techTextColor = 'text-[#0A2540] dark:text-cyan-300';
 
-  // In dark mode or light variant: Maker is light/white, Techsystem is light/cyan-slate
-  // In light mode: Maker is dark navy (#0F2B48), Techsystem is dark navy
-  const makerTextColor =
-    variant === 'light'
-      ? 'text-white'
-      : variant === 'dark'
-      ? 'text-[#0F2B48]'
-      : 'text-slate-900 dark:text-white';
+  if (isWhiteBadge) {
+    makerTextColor = 'text-[#0A2540]';
+    techTextColor = 'text-[#0A2540]';
+  } else if (variant === 'light') {
+    makerTextColor = 'text-white';
+    techTextColor = 'text-cyan-300';
+  } else if (variant === 'dark') {
+    makerTextColor = 'text-[#0A2540]';
+    techTextColor = 'text-[#0A2540]';
+  }
 
-  const techTextColor =
-    variant === 'light'
-      ? 'text-cyan-200/90'
-      : variant === 'dark'
-      ? 'text-[#0F2B48]'
-      : 'text-[#0F2B48] dark:text-slate-300';
+  // Dimensões do SVG
+  const svgDimensions = {
+    sm: 'w-7 h-7',
+    md: 'w-9 h-9',
+    lg: 'w-11 h-11',
+    xl: 'w-14 h-14',
+  }[size];
 
-  const badgeBg =
-    showBadge
-      ? 'bg-white/95 dark:bg-slate-900/90 p-2.5 rounded-xl border border-slate-200 dark:border-cyan-500/30 shadow-lg shadow-cyan-950/20 backdrop-blur-sm'
-      : '';
+  const textSizes = {
+    sm: { main: 'text-base', sub: 'text-[9px]' },
+    md: { main: 'text-lg', sub: 'text-[11px]' },
+    lg: { main: 'text-2xl', sub: 'text-[12px]' },
+    xl: { main: 'text-3xl', sub: 'text-[14px]' },
+  }[size];
+
+  const badgeWrapper = isWhiteBadge
+    ? 'bg-white px-4 py-2.5 rounded-2xl shadow-xl shadow-cyan-950/20 border border-slate-100'
+    : showBadge
+    ? 'bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-cyan-500/30 shadow-lg shadow-cyan-950/30'
+    : '';
 
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${badgeBg} ${className}`}>
-      {/* SVG Icon with ili bars + pixel square */}
-      <div className="relative flex-shrink-0 flex flex-col items-center justify-center">
+    <div className={`inline-flex items-center gap-3 select-none ${badgeWrapper} ${className}`}>
+      {/* Símbolo Gráfico MakerPixel (3 barras ili + pixel box conectado) */}
+      <div className="relative flex-shrink-0 flex items-center justify-center">
         <svg
-          className="w-10 h-10 transition-transform duration-300 hover:scale-105"
-          viewBox="0 0 44 44"
+          className={`${svgDimensions} transition-transform duration-300 hover:scale-105`}
+          viewBox="0 0 54 54"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Subtle tech background circle glow */}
-          <rect width="44" height="44" rx="10" className="fill-cyan-500/10 dark:fill-cyan-400/15" />
-          
-          {/* Top row bars: ili icon */}
-          <rect x="7" y="14" width="4.5" height="12" rx="1.5" fill="#0284C7" />
-          <rect x="14" y="8" width="4.5" height="18" rx="1.5" fill="#00A3E0" />
-          <rect x="21" y="11" width="4.5" height="15" rx="1.5" fill="#38BDF8" />
+          {/* Barra vertical esquerda (Navy / Azul profundo) */}
+          <rect
+            x="6"
+            y="14"
+            width="6.5"
+            height="17"
+            rx="2.5"
+            fill={isWhiteBadge ? '#0A2540' : '#0284C7'}
+          />
 
-          {/* Bottom row: Square pixel icon with core dot */}
-          <rect x="7" y="28" width="7" height="7" rx="1.5" stroke="#0284C7" strokeWidth="2" fill="none" />
-          <rect x="9.5" y="30.5" width="2" height="2" rx="0.5" fill="#00A3E0" />
-          
-          {/* Tech horizontal interconnect lines */}
-          <path d="M16 31.5H35" stroke="#00A3E0" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="36" cy="31.5" r="2" fill="#38BDF8" />
+          {/* Barra vertical central (Mais alta - Ciano elétrico vibrante) */}
+          <rect
+            x="16.5"
+            y="6"
+            width="6.5"
+            height="25"
+            rx="2.5"
+            fill="#00A3E0"
+          />
+
+          {/* Barra vertical direita (Ciano céu brilhante) */}
+          <rect
+            x="27"
+            y="10.5"
+            width="6.5"
+            height="20.5"
+            rx="2.5"
+            fill="#38BDF8"
+          />
+
+          {/* Bloco Pixel inferior (Caixa com borda e ponto central) */}
+          <rect
+            x="6"
+            y="35"
+            width="10.5"
+            height="10.5"
+            rx="2.5"
+            stroke={isWhiteBadge ? '#0A2540' : '#00A3E0'}
+            strokeWidth="2.5"
+            fill="none"
+          />
+          <rect
+            x="9.75"
+            y="38.75"
+            width="3"
+            height="3"
+            rx="1"
+            fill="#00A3E0"
+          />
+
+          {/* Linha de conexão de barramento de dados para Techsystem */}
+          <path
+            d="M19.5 40.25H44"
+            stroke="#00A3E0"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+          <circle cx="45" cy="40.25" r="2.5" fill="#38BDF8" />
         </svg>
       </div>
 
-      {/* Brand Text: MakerPixel Techsystem */}
+      {/* Tipografia da Marca: MakerPixel Techsystem */}
       <div className="flex flex-col justify-center leading-tight">
-        <div className="flex items-center tracking-tight text-xl font-extrabold">
+        <div className={`flex items-center tracking-tight ${textSizes.main} font-black`}>
           <span className={`${makerTextColor} transition-colors duration-200`}>Maker</span>
-          <span className="text-[#00A3E0] drop-shadow-sm font-black">Pixel</span>
+          <span className="text-[#00A3E0] drop-shadow-sm ml-0.5">Pixel</span>
         </div>
-        <div className="flex items-center tracking-widest text-[11px] font-bold uppercase mt-[-2px]">
-          <span className={`${techTextColor} tracking-[0.2em]`}>Techsystem</span>
+        <div className={`flex items-center font-extrabold uppercase mt-[-1px] ${textSizes.sub}`}>
+          <span className={`${techTextColor} tracking-[0.22em]`}>Techsystem</span>
         </div>
       </div>
     </div>

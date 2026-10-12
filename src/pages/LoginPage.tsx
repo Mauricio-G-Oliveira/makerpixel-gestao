@@ -60,7 +60,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800/80 hover:border-cyan-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-xl relative z-10 transition-all duration-300">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <Logo size="lg" variant="light" showBadge />
+          <Logo size="lg" variant="badge-white" showBadge />
           <h2 className="text-xl font-bold text-white mt-5 tracking-tight">
             Acesso ao Sistema
           </h2>
