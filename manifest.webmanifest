@@ -1,0 +1,32 @@
+{
+  "name": "MakerPixel Techsystem",
+  "short_name": "MakerPixel",
+  "description": "MakerPixel Techsystem - Gestão Financeira, Fiscal & Integração Contábil SCI Único",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#060B13",
+  "theme_color": "#00A3E0",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "productivity"]
+}
