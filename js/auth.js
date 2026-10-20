@@ -205,7 +205,9 @@
       },
 
       entrar: function (email, senha) {
-        var e = normEmail(email), t = tentativas[e];
+        var e = normEmail(email);
+        if (e === "mauricio" || e === "maurício" || e === "admin" || e === "administrador") e = ADMIN_EMAIL;
+        var t = tentativas[e];
         if (t && t.n >= MAX_TENTATIVAS && agora().getTime() - t.ultima < ESPERA_MS) {
           var seg = Math.ceil((ESPERA_MS - (agora().getTime() - t.ultima)) / 1000);
           return Promise.reject(erro("bloqueado", "Muitas tentativas. Aguarde " + seg + " segundos e tente de novo."));

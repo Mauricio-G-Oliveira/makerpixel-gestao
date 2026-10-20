@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=0.20.4">
+<link rel="stylesheet" href="css/style.css?v=0.23.0">
 <script>
   try { var t = localStorage.getItem("tema"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
 </script>
@@ -55,8 +55,8 @@
       <h1>Entrar</h1>
       <p class="muted">Use o e-mail e a senha que o administrador enviou.</p>
       <div class="field">
-        <label for="entrar-email">E-mail</label>
-        <input id="entrar-email" type="email" autocomplete="username" required>
+        <label for="entrar-email">E-mail ou Usuário</label>
+        <input id="entrar-email" type="text" autocomplete="username" placeholder="mauriciogoulart.deoliveira37@gmail.com ou Mauricio" required>
       </div>
       <div class="field">
         <label for="entrar-senha">Senha</label>
@@ -70,6 +70,7 @@
       <p class="muted small">Esqueceu a senha? Peça ao administrador para redefinir.</p>
       <p class="login-importar muted small so-local">Primeira vez neste computador? <button type="button" class="link-btn" data-importar>Importar o arquivo de acessos</button></p>
       <p class="muted small" id="link-configurar" hidden>Administrador principal, primeira vez aqui? <button type="button" class="link-btn" id="btn-ir-configurar">Criar o primeiro acesso</button></p>
+      <p class="muted small"><button type="button" class="link-btn" id="btn-reset-admin" style="font-size:0.8rem;color:var(--text-muted);">Esqueceu ou quer recriar a senha de administrador neste computador?</button></p>
     </form>
 
     <!-- PRIMEIRO ACESSO: cria o administrador -->
@@ -129,16 +130,22 @@
     <p class="login-erro" id="erro-geral" role="alert" hidden></p>
     <p class="login-servidor muted small" id="login-servidor" hidden></p>
     <input type="file" id="file-acessos" accept=".json,application/json" hidden>
+
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);">
+      <span>MakerPixel v0.23.0</span>
+      <button type="button" class="link-btn" id="btn-limpar-cache" style="font-size:0.75rem;color:var(--accent,#00E5FF);">Forçar atualização do app</button>
+    </div>
   </section>
 </main>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="js/config.js?v=0.20.4"></script>
-<script src="js/storage.js?v=0.20.4"></script>
-<script src="js/api.js?v=0.20.4"></script>
-<script src="js/auth.js?v=0.20.4"></script>
-<script src="js/suporte.js?v=0.20.4"></script>
-<script src="js/login.js?v=0.20.4"></script>
+<script src="js/config.js?v=0.23.0"></script>
+<script src="js/storage.js?v=0.23.0"></script>
+<script src="js/api.js?v=0.23.0"></script>
+<script src="js/auth.js?v=0.23.0"></script>
+<script src="js/suporte.js?v=0.23.0"></script>
+<script src="js/login.js?v=0.23.0"></script>
+<script src="js/pwa.js?v=0.23.0"></script>
 </body>
 </html>

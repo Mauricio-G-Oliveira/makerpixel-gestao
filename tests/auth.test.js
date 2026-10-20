@@ -69,6 +69,14 @@ describe("primeiro acesso e login", () => {
     avancar(31000);
     assert.equal((await auth.entrar(A.ADMIN_EMAIL, SENHA_ADMIN)).perfil, "admin");
   });
+  test("entrar aceita o apelido 'Mauricio' ou 'admin'", async () => {
+    const { auth } = ambiente();
+    await auth.configurarAdmin("Mauricio", SENHA_ADMIN);
+    const u1 = await auth.entrar("Mauricio", SENHA_ADMIN);
+    assert.equal(u1.email, A.ADMIN_EMAIL);
+    const u2 = await auth.entrar("admin", SENHA_ADMIN);
+    assert.equal(u2.email, A.ADMIN_EMAIL);
+  });
 });
 
 describe("administração", () => {

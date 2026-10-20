@@ -41,9 +41,7 @@
   navigator.serviceWorker.addEventListener("controllerchange", function () {
     if (recarregando) return;
     recarregando = true;
-    // só recarrega se a pessoa pediu (havia um app aberto controlado por outra versão)
-    var aviso = avisoEl();
-    if (aviso && !aviso.hidden) location.reload();
+    location.reload();
   });
 
   function acompanhar(reg) {

@@ -39,20 +39,51 @@
     irParaSistema();
   }
 
+  function resolverEmail(email) {
+    var e = String(email || "").trim().toLowerCase();
+    if (e === "mauricio" || e === "maurício" || e === "admin" || e === "administrador") {
+      return AuthCore.ADMIN_EMAIL;
+    }
+    return e;
+  }
+
   // ---------------------------------------------------------------- ações
 
   $("form-entrar").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var f = this; erro("entrar-erro", "");
-    var email = $("entrar-email").value, senha = $("entrar-senha").value;
-    if (!email || !senha) { erro("entrar-erro", "Informe o e-mail e a senha."); return; }
+    var emailDigitado = $("entrar-email").value.trim();
+    var email = resolverEmail(emailDigitado);
+    var senha = $("entrar-senha").value;
+    if (!emailDigitado || !senha) { erro("entrar-erro", "Informe o e-mail ou usuário e a senha."); return; }
     ocupado(f, true);
-    auth.entrar(email, senha).then(function (u) {
-      senhaDigitada = senha;
-      try { localStorage.setItem("gf.ultimoEmail", email.trim().toLowerCase()); } catch (e) {}
-      depoisDeEntrar(u);
+
+    auth.precisaConfigurar().then(function (vazio) {
+      if (vazio && email === AuthCore.ADMIN_EMAIL) {
+        var p = AuthCore.problemaSenha(senha);
+        if (p) {
+          erro("entrar-erro", "Primeiro acesso do administrador: " + p);
+          ocupado(f, false);
+          $("entrar-senha").select();
+          return;
+        }
+        return auth.configurarAdmin("Maurício", senha).then(function () {
+          return auth.entrar(AuthCore.ADMIN_EMAIL, senha);
+        }).then(function (u) {
+          senhaDigitada = senha;
+          try { localStorage.setItem("gf.ultimoEmail", emailDigitado); } catch (e) {}
+          toast("Administrador configurado! Entrando…");
+          depoisDeEntrar(u);
+        });
+      }
+
+      return auth.entrar(email, senha).then(function (u) {
+        senhaDigitada = senha;
+        try { localStorage.setItem("gf.ultimoEmail", emailDigitado); } catch (e) {}
+        depoisDeEntrar(u);
+      });
     }).catch(function (e) {
-      erro("entrar-erro", e.message);
+      erro("entrar-erro", e.message || "E-mail ou senha incorretos.");
       $("entrar-senha").select();
     }).then(function () { ocupado(f, false); });
   });
@@ -95,6 +126,49 @@
   });
   $("btn-ir-configurar").addEventListener("click", function () { mostrar("form-configurar"); });
   $("btn-voltar-entrar").addEventListener("click", function () { mostrar("form-entrar"); });
+
+  var btnReset = $("btn-reset-admin");
+  if (btnReset) {
+    btnReset.addEventListener("click", function () {
+      if (confirm("Deseja redefinir os acessos de administrador neste computador e cadastrar uma nova senha?")) {
+        try {
+          localStorage.removeItem("gf.sessao");
+          localStorage.removeItem("auth:usuarios");
+        } catch (e) {}
+        Store.del("auth:usuarios").then(function () {
+          toast("Acessos locais limpos. Digite 'Mauricio' e a sua nova senha.");
+          mostrar("form-entrar");
+          $("entrar-email").value = "Mauricio";
+          $("entrar-senha").value = "";
+          $("entrar-senha").focus();
+        });
+      }
+    });
+  }
+
+  var btnLimpar = $("btn-limpar-cache");
+  if (btnLimpar) {
+    btnLimpar.addEventListener("click", function () {
+      var b = this; b.disabled = true; b.textContent = "Atualizando…";
+      var p = Promise.resolve();
+      if ("serviceWorker" in navigator) {
+        p = navigator.serviceWorker.getRegistrations().then(function (regs) {
+          return Promise.all(regs.map(function (r) { return r.unregister(); }));
+        });
+      }
+      p.then(function () {
+        if ("caches" in window) {
+          return caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+          });
+        }
+      }).then(function () {
+        location.reload(true);
+      }).catch(function () {
+        location.reload(true);
+      });
+    });
+  }
 
   // importar o arquivo de acessos (fase sem servidor)
   Array.prototype.forEach.call(document.querySelectorAll("[data-importar]"), function (b) {
