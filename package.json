@@ -1,29 +1,9 @@
 {
-  "name": "makerpixel-techsystem",
-  "version": "1.0.0",
-  "description": "MakerPixel Techsystem - Gestão Financeira & Integração Contábil",
+  "name": "gestao-financeira",
+  "version": "0.20.4",
+  "private": true,
+  "description": "Integração contábil (SCI Único) e conciliação bancária",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist --dotfiles",
-    "test": "node --test tests/*.test.js"
-  },
-  "dependencies": {
-    "lucide-react": "^1.53.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
-    "gh-pages": "^6.3.0",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "test": "node --test"
   }
 }

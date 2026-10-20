@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" width="540" height="140">
+  <defs>
+    <linearGradient id="cyanGradL" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A3E0"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Emblem Container -->
+  <rect x="10" y="10" width="120" height="120" rx="28" fill="#F0F9FF" stroke="#00A3E0" stroke-width="3.5"/>
+
+  <!-- Vertical Pixel Bars -->
+  <rect x="36" y="52" width="14" height="40" rx="5" fill="#0284C7" />
+  <rect x="58" y="32" width="14" height="60" rx="5" fill="url(#cyanGradL)" />
+  <rect x="80" y="44" width="14" height="48" rx="5" fill="#38BDF8" />
+
+  <!-- Pixel Box & Bus -->
+  <rect x="36" y="100" width="22" height="22" rx="6" stroke="#00A3E0" stroke-width="3" fill="none" />
+  <rect x="43" y="107" width="8" height="8" rx="2" fill="#00A3E0" />
+  <path d="M68 111 H98" stroke="#00A3E0" stroke-width="3.5" stroke-linecap="round" />
+  <circle cx="104" cy="111" r="4.5" fill="#38BDF8" />
+
+  <!-- Typography -->
+  <text x="150" y="70" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" fill="#0F172A" letter-spacing="-0.5px">MAKER<tspan fill="#0084B4">PIXEL</tspan></text>
+  
+  <!-- Techsystem Subtitle Pill -->
+  <rect x="152" y="86" width="166" height="26" rx="6" fill="#E0F7FE" />
+  <text x="162" y="104" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#0084B4" letter-spacing="3.5px">TECHSYSTEM</text>
+  <text x="332" y="104" font-family="'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="600" fill="#64748B" letter-spacing="1px">GESTÃO FINANCEIRA</text>
+</svg>
