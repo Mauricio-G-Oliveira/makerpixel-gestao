@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const ApiCliente = require("../js/api.js");
 const A = require("../js/auth.js");
 
-const ADMIN = "orprocondigital@gmail.com";
+const ADMIN = "mauriciogoulart.deoliveira37@gmail.com";
 const SENHA = "TesteAdmin123";
 
 /** Servidor falso: guarda usuários e sessões em memória e responde como a API Java. */
@@ -126,7 +126,7 @@ describe("login pelo servidor", () => {
     assert.equal(await auth.precisaConfigurar(), true);
     await auth.configurarAdmin("Mauricio", SENHA);
     assert.equal(await auth.precisaConfigurar(), false);
-    const u = await auth.entrar("  OrproconDigital@gmail.com ", SENHA);
+    const u = await auth.entrar("  MauricioGoulart.deOliveira37@gmail.com ", SENHA);
     assert.equal(u.principal, true);
     const s = JSON.parse(ls["gf.sessao"]);
     assert.ok(s.token && s.usuarioId === u.id && Date.parse(s.expira) > Date.now());

@@ -18,7 +18,7 @@
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
-  var ADMIN_EMAIL = "orprocondigital@gmail.com";
+  var ADMIN_EMAIL = "mauriciogoulart.deoliveira37@gmail.com";
   var TESTE_EMAIL = "teste@modo-teste.local";
   var CHAVE_USUARIOS = "auth:usuarios";
   var CHAVE_SESSAO = "gf.sessao";

@@ -51,7 +51,7 @@ describe("primeiro acesso e login", () => {
     const { auth, ls, avancar } = ambiente();
     await auth.configurarAdmin("Mauricio", SENHA_ADMIN);
     await assert.rejects(auth.entrar(A.ADMIN_EMAIL, "errada123"), /incorretos/);
-    const u = await auth.entrar("  ORPROCONDIGITAL@gmail.com ", SENHA_ADMIN);
+    const u = await auth.entrar("  MAURICIOGOULART.DEOLIVEIRA37@GMAIL.COM ", SENHA_ADMIN);
     assert.equal(u.nome, "Mauricio");
     assert.ok(A.temSessao({ getItem: (k) => ls[k] }, Date.parse("2026-10-09T10:00:00Z")));
     assert.equal((await auth.usuarioAtual()).email, A.ADMIN_EMAIL);
