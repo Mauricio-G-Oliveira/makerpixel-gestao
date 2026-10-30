@@ -3,7 +3,7 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const Core = require("../js/core.js");
+const Core = require("../src/legado/core.js");
 
 const lerFixture = (nome) => fs.readFileSync(path.join(__dirname, "fixtures", nome));
 

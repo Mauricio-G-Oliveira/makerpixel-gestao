@@ -2,7 +2,7 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 if (!globalThis.crypto) globalThis.crypto = require("node:crypto").webcrypto;   // Node 18
-const A = require("../js/auth.js");
+const A = require("../src/legado/auth.js");
 
 function ambiente(inicio = "2026-10-09T09:00:00Z", modoTeste = false, dados = {}) {
   const ls = {};
@@ -88,13 +88,13 @@ describe("administração", () => {
   }
   test("cria usuário com senha provisória e áreas; ele troca a senha no primeiro acesso", async () => {
     const { auth } = await comAdmin();
-    await assert.rejects(auth.criarUsuario({ nome: "Ana", email: "ana@orprocon", perfil: "usuario", areas: ["conciliacao"] }), /E-mail inválido/);
-    await assert.rejects(auth.criarUsuario({ nome: "Ana", email: "ana@orprocon.com.br", perfil: "usuario", areas: [] }), /pelo menos uma área/);
-    const r = await auth.criarUsuario({ nome: "Ana", email: "Ana@Orprocon.com.br", perfil: "usuario", areas: ["conciliacao", "mod-icms", "inventada"] });
-    assert.deepEqual([r.usuario.email, r.usuario.areas, r.usuario.trocarSenha], ["ana@orprocon.com.br", ["conciliacao", "mod-icms"], true]);
-    await assert.rejects(auth.criarUsuario({ nome: "Ana 2", email: "ana@orprocon.com.br", perfil: "usuario", areas: ["conciliacao"] }), /Já existe/);
+    await assert.rejects(auth.criarUsuario({ nome: "Ana", email: "ana@empresa", perfil: "usuario", areas: ["conciliacao"] }), /E-mail inválido/);
+    await assert.rejects(auth.criarUsuario({ nome: "Ana", email: "ana@empresa.com.br", perfil: "usuario", areas: [] }), /pelo menos uma área/);
+    const r = await auth.criarUsuario({ nome: "Ana", email: "Ana@Empresa.com.br", perfil: "usuario", areas: ["conciliacao", "mod-icms", "inventada"] });
+    assert.deepEqual([r.usuario.email, r.usuario.areas, r.usuario.trocarSenha], ["ana@empresa.com.br", ["conciliacao", "mod-icms"], true]);
+    await assert.rejects(auth.criarUsuario({ nome: "Ana 2", email: "ana@empresa.com.br", perfil: "usuario", areas: ["conciliacao"] }), /Já existe/);
     await auth.sair();
-    const ana = await auth.entrar("ana@orprocon.com.br", r.senhaProvisoria);
+    const ana = await auth.entrar("ana@empresa.com.br", r.senhaProvisoria);
     assert.equal(ana.trocarSenha, true);
     assert.ok(A.podeAcessar(ana, "mod-icms") && !A.podeAcessar(ana, "integracao"));
     await assert.rejects(auth.listarUsuarios(), /Só o administrador/);
@@ -105,27 +105,27 @@ describe("administração", () => {
   test("desativar, redefinir senha, excluir; o último admin é protegido", async () => {
     const { auth } = await comAdmin();
     const eu = (await auth.usuarioAtual()).id;
-    const { usuario: b } = await auth.criarUsuario({ nome: "Bruno", email: "bruno@orprocon.com.br", perfil: "usuario", areas: ["mod-vencimentos"] });
+    const { usuario: b } = await auth.criarUsuario({ nome: "Bruno", email: "bruno@empresa.com.br", perfil: "usuario", areas: ["mod-vencimentos"] });
     await auth.atualizarUsuario(b.id, { ativo: false });
     const { senhaProvisoria } = await auth.redefinirSenha(b.id);
     await auth.sair();
-    await assert.rejects(auth.entrar("bruno@orprocon.com.br", senhaProvisoria), /desativado/);
+    await assert.rejects(auth.entrar("bruno@empresa.com.br", senhaProvisoria), /desativado/);
     await auth.entrar(A.ADMIN_EMAIL, SENHA_ADMIN);
     await assert.rejects(auth.atualizarUsuario(eu, { perfil: "usuario", areas: ["conciliacao"] }), /próprio acesso/);
     await assert.rejects(auth.excluirUsuario(eu), /próprio acesso/);
-    await assert.rejects(auth.atualizarUsuario(eu, { email: "outro@orprocon.com.br" }), /não pode ser alterado/);
+    await assert.rejects(auth.atualizarUsuario(eu, { email: "outro@empresa.com.br" }), /não pode ser alterado/);
     await auth.excluirUsuario(b.id);
     assert.deepEqual((await auth.listarUsuarios()).map((u) => u.nome), ["Mauricio"]);
   });
   test("acessos vão para outro computador pelo arquivo (sem senha em texto)", async () => {
     const { auth } = await comAdmin();
-    const { senhaProvisoria } = await auth.criarUsuario({ nome: "Carla", email: "carla@orprocon.com.br", perfil: "usuario", areas: ["integracao"] });
+    const { senhaProvisoria } = await auth.criarUsuario({ nome: "Carla", email: "carla@empresa.com.br", perfil: "usuario", areas: ["integracao"] });
     const arquivo = JSON.parse(JSON.stringify(await auth.exportarAcessos()));
     assert.ok(!JSON.stringify(arquivo).includes(senhaProvisoria) && !JSON.stringify(arquivo).includes(SENHA_ADMIN));
     const outro = ambiente();                                   // computador da Carla: nenhum usuário ainda
     await assert.rejects(outro.auth.importarAcessos({ app: "x" }), /não é um arquivo de acessos/);
     assert.deepEqual(await outro.auth.importarAcessos(arquivo), { novos: 2, atualizados: 0 });
-    assert.equal((await outro.auth.entrar("carla@orprocon.com.br", senhaProvisoria)).nome, "Carla");
+    assert.equal((await outro.auth.entrar("carla@empresa.com.br", senhaProvisoria)).nome, "Carla");
     await assert.rejects(outro.auth.importarAcessos(arquivo), /Só o administrador/);   // já tem contas: só o admin importa
   });
 });
@@ -160,17 +160,17 @@ describe("gestores e gerentes como administradores", () => {
     const { auth } = ambiente();
     await auth.configurarAdmin("Mauricio", SENHA_ADMIN);
     await auth.entrar(A.ADMIN_EMAIL, SENHA_ADMIN);
-    const { usuario: gerente, senhaProvisoria } = await auth.criarUsuario({ nome: "Gerente", email: "gerente@orprocon.com.br", perfil: "admin" });
+    const { usuario: gerente, senhaProvisoria } = await auth.criarUsuario({ nome: "Gerente", email: "gerente@empresa.com.br", perfil: "admin" });
     assert.deepEqual([gerente.perfil, gerente.principal, gerente.areas.length], ["admin", false, A.AREAS.length]);
     await auth.sair();
-    await auth.entrar("gerente@orprocon.com.br", senhaProvisoria);
+    await auth.entrar("gerente@empresa.com.br", senhaProvisoria);
     const lista = await auth.listarUsuarios();
     const principal = lista.find((u) => u.principal);
     assert.equal(principal.email, A.ADMIN_EMAIL);
     for (const tentativa of [auth.atualizarUsuario(principal.id, { ativo: false }), auth.redefinirSenha(principal.id), auth.excluirUsuario(principal.id)]) {
       await assert.rejects(tentativa, /Só o administrador principal/);
     }
-    const { usuario: ana } = await auth.criarUsuario({ nome: "Ana", email: "ana@orprocon.com.br", perfil: "usuario", areas: ["conciliacao"] });
+    const { usuario: ana } = await auth.criarUsuario({ nome: "Ana", email: "ana@empresa.com.br", perfil: "usuario", areas: ["conciliacao"] });
     assert.equal((await auth.atualizarUsuario(ana.id, { areas: ["conciliacao", "mod-icms"] })).areas.length, 2);
   });
 });

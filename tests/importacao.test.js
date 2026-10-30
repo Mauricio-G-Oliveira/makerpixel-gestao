@@ -1,6 +1,6 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const Imp = require("../js/importacao.js");
+const Imp = require("../src/legado/importacao.js");
 
 const CAB_BANCO = ["Data", "Doc.", "Descrição/Histórico", "Valor", "Saldo", "Modelo DOC", "Nome do Fornecedor/Cliente",
   "CPF/CNPJ", "Categoria", "Unidade", "Natureza do gasto", "Conta"];

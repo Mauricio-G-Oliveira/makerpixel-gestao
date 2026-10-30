@@ -1,18 +1,18 @@
 // Botão de suporte: a mensagem já leva a tela, o usuário e a versão.
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const S = require("../js/suporte.js");
+const S = require("../src/legado/suporte.js");
 
 test("mensagem com assunto, texto e contexto", () => {
   const m = S.mensagem({ tipo: "problema", texto: "  O extrato não importa.  ", tela: "Contábil › Conciliação",
     usuario: { nome: "Ana Exemplo", email: "ana@exemplo.com" }, versao: "0.19.1", atendente: "Mauricio" });
-  assert.equal(m, "Olá, Mauricio! Encontrei um problema no Gestão Financeira.\n\nO extrato não importa.\n\n" +
+  assert.equal(m, "Olá, Mauricio! Encontrei um problema no MakerPixel Techsystem.\n\nO extrato não importa.\n\n" +
     "Tela: Contábil › Conciliação\nUsuário: Ana Exemplo · ana@exemplo.com\nVersão: 0.19.1");
 });
 
 test("sem texto e sem usuário (tela de login), vira uma dúvida", () => {
   const m = S.mensagem({ tela: "Tela de login" });
-  assert.match(m, /^Olá! Tenho uma dúvida no Gestão Financeira\./);
+  assert.match(m, /^Olá! Tenho uma dúvida no MakerPixel Techsystem\./);
   assert.ok(!/Usuário:/.test(m));
 });
 
@@ -31,6 +31,6 @@ test("o número configurado é válido", () => {
   global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
   const fs = require("node:fs"), vm = require("node:vm");
   const ctx = { location: global.location, localStorage: global.localStorage, URLSearchParams };
-  vm.runInNewContext(fs.readFileSync(require("node:path").join(__dirname, "..", "js", "config.js"), "utf8") + ";this.CONFIG=CONFIG;", ctx);
+  vm.runInNewContext(fs.readFileSync(require("node:path").join(__dirname, "..", "src", "legado", "config.js"), "utf8") + ";this.CONFIG=CONFIG;", ctx);
   assert.match(ctx.CONFIG.suporte.whatsapp, /^55\d{10,11}$/);
 });

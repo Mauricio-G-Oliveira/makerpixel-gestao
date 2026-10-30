@@ -1,6 +1,6 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const I = require("../js/integracao.js");
+const I = require("../src/legado/integracao.js");
 
 const L = (o) => Object.assign({ data: "2026-09-01", valorNum: 100, sign: "C", categoria: "Recebimento", unidade: "Matriz" }, o);
 const fonte = (lancamentos, extra) => Object.assign({ nome: "Sicredi 19915-0 Conta 627", contaBanco: "627", lancamentos }, extra);

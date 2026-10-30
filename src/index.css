@@ -1,0 +1,100 @@
+/* Cores MakerPixel Techsystem: tema Obsidian Cyber Dark (#060B13, #0A1220) e Cyan Neon (#00E5FF) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* claro: fundo levemente azulado, cartões brancos, menu e acentos cyan corporativo */
+  --canvas: 244 247 251;
+  --surface: 255 255 255;
+  --surface-2: 247 249 252;
+  --line: 225 231 239;
+  --line-strong: 203 212 224;
+  --ink: 17 24 39;
+  --ink-2: 51 61 77;
+  --muted: 92 104 122;
+  --brand: 0 145 180;
+  --brand-hover: 0 115 145;
+  --brand-soft: 224 247 252;
+  --brand-fill: 0 168 204;
+  --brand-fill-hover: 0 142 175;
+  --on-fill: 255 255 255;
+  --grafite: 10 18 32;
+  --on-grafite: 244 247 252;
+  --credit: 21 128 61;
+  --debit: 200 34 34;
+  --debit-soft: 254 228 226;
+  --warn: 180 83 9;
+  --warn-soft: 255 239 211;
+  --info: 29 98 216;
+  --info-soft: 225 236 254;
+  --ok-soft: 220 247 229;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  /* escuro: Obsidian Cyber Dark (#060B13, #0A1220) com Cyan Neon (#00E5FF) */
+  --canvas: 6 11 19;
+  --surface: 10 18 32;
+  --surface-2: 15 29 51;
+  --line: 30 46 72;
+  --line-strong: 42 64 100;
+  --ink: 240 244 250;
+  --ink-2: 205 218 235;
+  --muted: 135 158 188;
+  --brand: 0 229 255;
+  --brand-hover: 64 237 255;
+  --brand-soft: 10 42 62;
+  --brand-fill: 0 229 255;
+  --brand-fill-hover: 0 200 225;
+  --on-fill: 4 14 26;
+  --grafite: 10 18 32;
+  --on-grafite: 0 229 255;
+  --credit: 52 211 153;
+  --debit: 248 113 113;
+  --debit-soft: 55 24 24;
+  --warn: 251 191 36;
+  --warn-soft: 55 40 16;
+  --info: 96 165 250;
+  --info-soft: 20 38 68;
+  --ok-soft: 16 46 32;
+  color-scheme: dark;
+}
+/* menu lateral (e o lado da marca no login): obsidian dark nos dois temas; as variáveis valem só dentro dele */
+.menu-lateral {
+  --surface: 10 18 32;
+  --surface-2: 15 29 51;
+  --line: 30 46 72;
+  --line-strong: 42 64 100;
+  --ink: 244 247 252;
+  --ink-2: 205 218 235;
+  --muted: 135 158 188;
+  --brand: 0 229 255;
+  --brand-hover: 64 237 255;
+  --brand-soft: 10 42 62;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .menu-lateral { --surface: 6 11 19; --surface-2: 10 18 32; --line: 25 38 60; --brand-soft: 10 42 62; }
+.cartao { box-shadow: 0 1px 2px rgb(16 24 40 / .05), 0 6px 18px rgb(30 50 90 / .06); }
+:root[data-theme="dark"] .cartao { box-shadow: 0 1px 2px rgb(0 0 0 / .3); }
+
+@layer base {
+  html, body, #raiz { height: 100%; }
+  body { @apply bg-canvas text-ink font-sans antialiased; font-size: 14px; }
+  :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(var(--brand-fill) / .4); border-radius: 6px; }
+  input, select, textarea { @apply bg-surface text-ink border border-line-strong rounded-lg px-3 h-10 w-full; font: inherit; }
+  textarea { @apply h-auto py-2; }
+  input:focus, select:focus, textarea:focus { @apply border-brand-fill; outline: none; box-shadow: 0 0 0 3px rgb(var(--brand-fill) / .3); }
+  input[type="checkbox"], input[type="radio"] { @apply h-auto w-auto p-0; accent-color: rgb(var(--brand-fill)); }
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold border border-transparent cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primario { @apply btn bg-brand-fill text-on-fill hover:bg-brand-fill-hover; }
+  .btn-contorno { @apply btn bg-surface border-line-strong text-ink hover:border-brand-fill; }
+  .btn-fantasma { @apply btn bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink; }
+  .btn-perigo { @apply btn bg-transparent text-debit hover:bg-debit-soft; }
+  .btn-sm { @apply h-8 px-3 text-[13px]; }
+  .cartao { @apply bg-surface border border-line rounded-xl; }
+  .ico { @apply w-[18px] h-[18px] shrink-0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .rotulo { @apply text-[13px] font-semibold text-ink; }
+}

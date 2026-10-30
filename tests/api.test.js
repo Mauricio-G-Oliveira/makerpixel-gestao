@@ -2,8 +2,8 @@
 // Senhas de teste são fictícias.
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const ApiCliente = require("../js/api.js");
-const A = require("../js/auth.js");
+const ApiCliente = require("../src/legado/api.js");
+const A = require("../src/legado/auth.js");
 
 const ADMIN = "mauriciogoulart.deoliveira37@gmail.com";
 const SENHA = "TesteAdmin123";
@@ -79,11 +79,11 @@ function ambiente(srv = servidorFalso()) {
 
 describe("api.js", () => {
   test("endereços aceitos: https em qualquer lugar, http só no próprio computador", () => {
-    assert.ok(ApiCliente.enderecoValido("https://api.orprocon.com.br"));
+    assert.ok(ApiCliente.enderecoValido("https://api.makerpixel.dev"));
     assert.ok(ApiCliente.enderecoValido("http://localhost:8080"));
     assert.ok(ApiCliente.enderecoValido("http://127.0.0.1:8080/"));
     assert.ok(!ApiCliente.enderecoValido("http://192.168.0.10:8080"));
-    assert.ok(!ApiCliente.enderecoValido("http://api.orprocon.com.br"));
+    assert.ok(!ApiCliente.enderecoValido("http://api.makerpixel.dev"));
     assert.ok(!ApiCliente.enderecoValido(""));
   });
 
@@ -126,7 +126,7 @@ describe("login pelo servidor", () => {
     assert.equal(await auth.precisaConfigurar(), true);
     await auth.configurarAdmin("Mauricio", SENHA);
     assert.equal(await auth.precisaConfigurar(), false);
-    const u = await auth.entrar("  MauricioGoulart.deOliveira37@gmail.com ", SENHA);
+    const u = await auth.entrar("  MauricioGoulart.DeOliveira37@gmail.com ", SENHA);
     assert.equal(u.principal, true);
     const s = JSON.parse(ls["gf.sessao"]);
     assert.ok(s.token && s.usuarioId === u.id && Date.parse(s.expira) > Date.now());

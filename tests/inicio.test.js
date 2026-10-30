@@ -1,8 +1,8 @@
 // Tela Início: junta as pendências dos módulos sem calcular diferente deles.
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const I = require("../js/inicio.js");
-const ED = require("../modulos/em-dia/js/dados.js");
+const I = require("../src/legado/inicio.js");
+const ED = require("../src/legado/modulos/em-dia/dados.js");
 
 const HOJE = "2026-10-16";
 const EU = { id: "u1", nome: "Mauricio Teste", email: "m@exemplo.com" };
@@ -27,7 +27,7 @@ describe("Início", () => {
 
   test("carrega exemplo só nos módulos vazios", () => {
     const { st, feitos } = exemplos();
-    assert.deepEqual(feitos, ["Em Dia", "ISS Tubarão", "Controle de horas", "Painel de vencimentos"]);
+    assert.deepEqual(feitos, ["Em Dia", "ISS Tubarão", "Controle de horas", "Certidões e alvarás"]);
     const ler = (k) => st[k] || null;
     assert.deepEqual(I.carregarExemplos(ler, () => { throw new Error("não devia gravar"); }, EU, HOJE), []);
   });
@@ -120,7 +120,7 @@ describe("Início", () => {
     const h = I.html(r, { podeEmDia: true });
     assert.ok(!h.includes("<img src=x"));
     assert.match(h, /&lt;img src=x/);
-    const M = require("../js/modulos.js");
+    const M = require("../src/legado/modulos.js");
     for (const m of h.matchAll(/data-prefs='([^']*)'/g)) {
       const prefs = JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
       for (const k of Object.keys(prefs)) assert.ok(M.ehDadoDeModulo(k), k);
@@ -147,7 +147,9 @@ describe("Início", () => {
   test("capa: só as ferramentas que a pessoa pode abrir, por setor", () => {
     const r = I.resumir({}, ctx());
     const tudo = I.capa(r);
-    assert.equal((tudo.match(/class="capa-card"/g) || []).length, 8);
+    assert.equal((tudo.match(/class="capa-card"/g) || []).length, 15);
+    assert.match(tudo, /Departamento Cadastro/);
+    assert.ok(!/Painel de vencimentos/.test(tudo), "o painel saiu: os vencimentos ficam em Certidões e Alvarás");
     assert.match(tudo, /Departamento Pessoal/);
     assert.match(tudo, /Integração contábil/);
     assert.ok(!/capa-minis/.test(tudo), "sem dados, sem mini cards");

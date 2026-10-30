@@ -1,6 +1,6 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const C = require("../js/conciliacao.js");
+const C = require("../src/legado/conciliacao.js");
 
 const planilha = [
   ["FAN METAL - CONTAS PAGAS - JULHO/2026"],

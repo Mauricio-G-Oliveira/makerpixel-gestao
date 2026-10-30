@@ -1,7 +1,7 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const N = require("../js/nfe.js");
-const C = require("../js/conciliacao.js");
+const N = require("../src/legado/nfe.js");
+const C = require("../src/legado/conciliacao.js");
 
 const EMPRESA = "11222333000144";
 let seq = 0;

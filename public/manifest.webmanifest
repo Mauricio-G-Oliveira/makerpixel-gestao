@@ -1,0 +1,17 @@
+{
+  "name": "MakerPixel Techsystem",
+  "short_name": "MakerPixel",
+  "description": "Gestão Financeira, Conciliação Bancária, Inteligência Fiscal e Contabilidade.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#060B13",
+  "theme_color": "#060B13",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icons/icon-192-v2.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-v2.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512-v2.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

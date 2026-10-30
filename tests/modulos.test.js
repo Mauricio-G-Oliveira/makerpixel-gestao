@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const M = require("../js/modulos.js");
+const M = require("../src/legado/modulos.js");
 
 test("vencimentos urgentes: vencidos e até 7 dias", () => {
   const estado = { documentos: [

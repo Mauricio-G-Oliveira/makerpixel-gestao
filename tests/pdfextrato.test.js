@@ -1,7 +1,7 @@
 // Extratos em PDF: páginas fictícias no formato do pdf.js ({ s, x, y, w }), imitando os layouts reais.
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-const P = require("../js/pdfextrato.js");
+const P = require("../src/legado/pdfextrato.js");
 
 // monta uma página: cada linha é [y, [x, texto], [x, texto]...]
 const pagina = (linhas) => linhas.flatMap(([y, ...itens]) => itens.map(([x, s]) => ({ s, x, y, w: s.length * 4 })));

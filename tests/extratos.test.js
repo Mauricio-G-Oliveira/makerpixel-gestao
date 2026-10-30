@@ -2,8 +2,8 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const Core = require("../js/core.js");
-const E = require("../js/extratos.js");
+const Core = require("../src/legado/core.js");
+const E = require("../src/legado/extratos.js");
 
 const OFX_SGML = `OFXHEADER:100
 DATA:OFXSGML
