@@ -1,7 +1,7 @@
 {
-  "name": "MakerPixel Techsystem – Gestão Financeira",
+  "name": "MakerPixel Techsystem",
   "short_name": "MakerPixel",
-  "description": "Sistema integrado de gestão financeira, auditoria fiscal e conciliação bancária MakerPixel.",
+  "description": "Gestão Financeira, Conciliação Bancária, Inteligência Fiscal e Contabilidade.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

@@ -1,50 +1,34 @@
 /*
- * sw.js — deixa o sistema instalável e abrindo sem internet.
+ * Service worker do MakerPixel Techsystem (React): deixa o sistema instalável e abrindo sem internet.
  *
- * Guarda os arquivos do sistema (não os dados: esses ficam no IndexedDB do navegador).
- * VERSAO usa o mesmo "?v=" do index.html: ao publicar, troque o número em todos os arquivos.
- * Os módulos (pasta modulos/) não usam "?v=": mudou um arquivo de módulo, aumente VERSAO
- * mesmo assim, senão quem já instalou continua com o arquivo antigo.
- * Arquivo novo em módulo: inclua em MODULOS (o teste tests/sw.test.js confere).
- * Versão nova: o navegador baixa este arquivo, instala em segundo plano e o sistema
- * mostra "Nova versão disponível". Ao clicar em Atualizar (ou ao reabrir o app), ela entra.
+ * Este é o MODELO. No build (npm run build), pwa/plugin.mjs preenche VERSAO e ARQUIVOS com a versão
+ * e pela lista de arquivos daquele build e grava dist/sw.js.
+ *
+ * Guarda só os arquivos do sistema; os dados ficam no IndexedDB/localStorage do navegador.
  */
-var VERSAO = "?v=0.23.0";
-var CACHE = "gestao-financeira-" + VERSAO.slice(3);
-var CACHE_EXTERNO = "gestao-financeira-externo";
-
+var VERSAO = "1.0.0-2cb49d83";
 var ARQUIVOS = [
-  "./", "login.html", "js/config.js" + VERSAO, "js/api.js" + VERSAO, "js/auth.js" + VERSAO, "js/login.js" + VERSAO, "js/suporte.js" + VERSAO,
-  "icons/makerpixel-logo.svg", "icons/makerpixel-logo-escuro.svg", "icons/makerpixel-simbolo.svg", "icons/orprocon-logo.png", "icons/orprocon-logo-escuro.png", "icons/orprocon-simbolo.png",
-  "css/style.css" + VERSAO,
-  "js/storage.js" + VERSAO, "js/core.js" + VERSAO, "js/integracao.js" + VERSAO, "js/importacao.js" + VERSAO,
-  "js/extratos.js" + VERSAO, "js/pdfextrato.js" + VERSAO, "js/conciliacao.js" + VERSAO, "js/nfe.js" + VERSAO,
-  "js/modulos.js" + VERSAO, "js/inicio.js" + VERSAO, "js/app.js" + VERSAO, "js/pwa.js" + VERSAO,
-  "manifest.webmanifest", "icons/icon-192-v2.png", "icons/icon-512-v2.png", "icons/favicon-32-v2.png", "icons/apple-touch-icon-v2.png"
+ "./",
+ "assets/ibsLc214-DnzwNCTr.js",
+ "assets/index-Bdw6VUAb.js",
+ "assets/index-DTrJ1qKZ.css",
+ "icons/apple-touch-icon-v2.png",
+ "icons/favicon-32-v2.png",
+ "icons/icon-192-v2.png",
+ "icons/icon-512-v2.png",
+ "icons/icon-maskable-512-v2.png",
+ "icons/icon.svg",
+ "icons/makerpixel-logo-escuro.svg",
+ "icons/makerpixel-logo.svg",
+ "icons/makerpixel-simbolo.png",
+ "icons/makerpixel-simbolo.svg",
+ "manifest.webmanifest"
 ];
+var CACHE = "makerpixel-react-" + VERSAO;
+var CACHE_EXTERNO = "makerpixel-react-externo";
 
-// módulos: sem "?v=", guardados pelo nome
-var MODULOS = [
-  "modulos/apuracao-icms/", "modulos/apuracao-icms/css/style.css",
-  "modulos/apuracao-icms/js/tema.js", "modulos/apuracao-icms/js/utils.js", "modulos/apuracao-icms/js/estado.js",
-  "modulos/apuracao-icms/js/regras.js", "modulos/apuracao-icms/js/leitor-xml.js", "modulos/apuracao-icms/js/apuracao.js",
-  "modulos/apuracao-icms/js/interface.js", "modulos/apuracao-icms/js/exportar.js", "modulos/apuracao-icms/js/exemplo.js",
-  "modulos/apuracao-icms/js/app.js",
-  "modulos/auditor-ibs-cbs/",
-  "modulos/painel-vencimentos/", "modulos/painel-vencimentos/css/style.css",
-  "modulos/painel-vencimentos/js/util.js", "modulos/painel-vencimentos/js/dados.js", "modulos/painel-vencimentos/js/telas.js",
-  "modulos/painel-vencimentos/js/acoes.js", "modulos/painel-vencimentos/js/app.js",
-  "modulos/painel-vencimentos/icons/icon.svg", "modulos/painel-vencimentos/icons/icon-192.png", "modulos/painel-vencimentos/icons/icon-512.png",
-  "modulos/em-dia/", "modulos/em-dia/css/em-dia.css", "modulos/em-dia/js/dados.js", "modulos/em-dia/js/app.js",
-  "modulos/iss-tubarao/", "modulos/iss-tubarao/css/iss.css", "modulos/iss-tubarao/js/leitor.js", "modulos/iss-tubarao/js/dados.js", "modulos/iss-tubarao/js/app.js",
-  "modulos/controle-horas/", "modulos/controle-horas/css/horas.css", "modulos/controle-horas/js/regras.js",
-  "modulos/controle-horas/js/planilha.js", "modulos/controle-horas/js/dados.js", "modulos/controle-horas/js/app.js"
-];
-ARQUIVOS = ARQUIVOS.concat(MODULOS);
-
-// bibliotecas de fora (planilhas, PDF, .zip, fonte): guardadas na primeira vez que forem usadas
-var EXTERNOS = ["https://cdnjs.cloudflare.com/", "https://fonts.googleapis.com/", "https://fonts.gstatic.com/",
-  "https://cdn.jsdelivr.net/", "https://cdn.tailwindcss.com"];
+// bibliotecas de fora (planilhas, PDF, fonte): guardadas na primeira vez que forem usadas
+var EXTERNOS = ["https://cdnjs.cloudflare.com/", "https://fonts.googleapis.com/", "https://fonts.gstatic.com/"];
 
 self.addEventListener("install", function (ev) {
   self.skipWaiting();
@@ -61,14 +45,14 @@ self.addEventListener("install", function (ev) {
 
 self.addEventListener("activate", function (ev) {
   ev.waitUntil(caches.keys().then(function (nomes) {
-    return Promise.all(nomes.filter(function (n) { return n.indexOf("gestao-financeira-") === 0 && n !== CACHE && n !== CACHE_EXTERNO; })
+    return Promise.all(nomes.filter(function (n) { return (n.indexOf("makerpixel-") === 0 || n.indexOf("gf-react-") === 0) && n !== CACHE && n !== CACHE_EXTERNO; })
       .map(function (n) { return caches.delete(n); }));
   }).then(function () { return self.clients.claim(); }));
 });
 
 self.addEventListener("message", function (ev) {
   if (ev.data === "atualizar") self.skipWaiting();
-  if (ev.data === "versao" && ev.source) ev.source.postMessage({ versao: VERSAO.slice(3) });
+  if (ev.data === "versao" && ev.source) ev.source.postMessage({ versao: VERSAO });
 });
 
 self.addEventListener("fetch", function (ev) {
@@ -76,8 +60,7 @@ self.addEventListener("fetch", function (ev) {
   if (req.method !== "GET") return;
   var url = new URL(req.url);
 
-  // páginas (o sistema e cada módulo, que abre num quadro): a versão guardada daquela página;
-  // sem ela, a da rede. Nunca devolve a página principal no lugar de outra.
+  // páginas (o sistema e cada módulo, que abre num quadro): a versão guardada daquela página; sem ela, a rede.
   if (req.mode === "navigate" && url.origin === location.origin) {
     ev.respondWith(caches.match(req, { cacheName: CACHE, ignoreSearch: true }).then(function (r) {
       if (r) return r;
@@ -91,7 +74,7 @@ self.addEventListener("fetch", function (ev) {
   }
 
   if (url.origin === location.origin) {
-    ev.respondWith(caches.match(req, { cacheName: CACHE }).then(function (r) { return r || fetch(req); }));
+    ev.respondWith(caches.match(req, { cacheName: CACHE, ignoreSearch: true }).then(function (r) { return r || fetch(req); }));
     return;
   }
 
