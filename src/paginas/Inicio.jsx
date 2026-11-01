@@ -65,23 +65,27 @@ function useResumo(usuario, pode) {
         }
       }
       // Alerta de Limites MEI e Simples Nacional
-      if (pode("mod-vencimentos")) {
-        const anoAtual = new Date().getFullYear();
-        const mesAtual = new Date().getMonth() + 1;
-        const emps = svcCad.empresas();
-        const fats = { [String(anoAtual)]: svcCad.faturamentos(String(anoAtual)) };
-        const avs = avaliarTodasEmpresas(emps, fats, anoAtual, anoAtual, mesAtual);
-        const atencaoCount = avs.filter((a) => a.nivel !== "OK").length;
-        if (atencaoCount > 0) {
-          r.vazio = false;
-          r.numeros.push({
-            id: "limites-mei-simples",
-            rotulo: "Limites MEI / Simples",
-            valor: String(atencaoCount),
-            sub: atencaoCount === 1 ? "empresa requer atenção" : "empresas requerem atenção",
-            tom: "alerta",
-            ir: { rota: "/departamento-cadastro/faturamentos" }
-          });
+      if (pode("mod-vencimentos") && svcCad) {
+        try {
+          const anoAtual = new Date().getFullYear();
+          const mesAtual = new Date().getMonth() + 1;
+          const emps = typeof svcCad.empresas === "function" ? svcCad.empresas() : [];
+          const fats = typeof svcCad.faturamentos === "function" ? { [String(anoAtual)]: svcCad.faturamentos(String(anoAtual)) } : {};
+          const avs = avaliarTodasEmpresas(emps, fats, anoAtual, anoAtual, mesAtual);
+          const atencaoCount = (avs || []).filter((a) => a && a.nivel !== "OK").length;
+          if (atencaoCount > 0) {
+            r.vazio = false;
+            r.numeros.push({
+              id: "limites-mei-simples",
+              rotulo: "Limites MEI / Simples",
+              valor: String(atencaoCount),
+              sub: atencaoCount === 1 ? "empresa requer atenção" : "empresas requerem atenção",
+              tom: "alerta",
+              ir: { rota: "/departamento-cadastro/faturamentos" }
+            });
+          }
+        } catch (eLim) {
+          console.warn("Aviso limites faturamento:", eLim);
         }
       }
       return r;

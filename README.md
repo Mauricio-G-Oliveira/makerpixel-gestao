@@ -159,16 +159,8 @@ npm run dev
 # Acesse: http://localhost:5173
 ```
 
-### 2. Backend (Docker & Spring Boot)
-```bash
-# Subir PostgreSQL e API via Docker Compose
-docker compose up -d
-
-# Ou executar o backend localmente com Maven:
-cd backend
-./mvnw clean spring-boot:run
-# API disponível em: http://localhost:8080
-```
+### 2. Backend Corporativo (Repositório Separado)
+* O backend (Java 21, Spring Boot 3, Spring Security JWT, Flyway e PostgreSQL com RLS) é mantido em repositório e pasta dedicada para desenvolvimento no IntelliJ IDEA e deploy no Supabase / PostgreSQL corporativo.
 
 ---
 

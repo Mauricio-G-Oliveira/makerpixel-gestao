@@ -86,18 +86,20 @@ export function gerarSenhaProvisoria() {
 }
 
 export function listarEscritorios() {
-  return lerStorage(STORAGE_KEY_ESCRITORIOS, ESCRITORIOS_PADRAO);
+  const l = lerStorage(STORAGE_KEY_ESCRITORIOS, ESCRITORIOS_PADRAO);
+  return Array.isArray(l) && l.length > 0 ? l : ESCRITORIOS_PADRAO;
 }
 
 export function obterEscritorio(id) {
   const lista = listarEscritorios();
-  return lista.find((e) => e.id === id) || lista[0];
+  return lista.find((e) => e && e.id === id) || lista[0] || ESCRITORIOS_PADRAO[0];
 }
 
 export function escritorioAtivo() {
   const lista = listarEscritorios();
-  const idAtivo = lerStorage(STORAGE_KEY_ATIVO, lista[0].id);
-  return lista.find((e) => e.id === idAtivo) || lista[0];
+  const idPadrao = (lista[0] && lista[0].id) ? lista[0].id : "esc-modelo";
+  const idAtivo = lerStorage(STORAGE_KEY_ATIVO, idPadrao);
+  return lista.find((e) => e && e.id === idAtivo) || lista[0] || ESCRITORIOS_PADRAO[0];
 }
 
 export function definirEscritorioAtivo(id) {
@@ -218,7 +220,7 @@ export function reativarEscritorio(id) {
  * Avalia o status do teste gratuito.
  */
 export function statusTeste(escritorio) {
-  if (!escritorio || escritorio.situacao !== "TESTE" || !escritorio.testeExpiraEm) {
+  if (!escritorio || typeof escritorio !== "object" || escritorio.situacao !== "TESTE" || !escritorio.testeExpiraEm) {
     return { emTeste: false, expirado: false, diasRestantes: 0, terminaHoje: false };
   }
 

@@ -187,7 +187,7 @@ export default function Layout() {
       )}
       <main className="min-w-0 flex flex-col min-h-screen">
         {/* Faixa de Teste Gratuito */}
-        {stTeste.emTeste && (
+        {stTeste?.emTeste && (
           <div className="bg-gradient-to-r from-brand-fill/90 to-brand text-black px-4 sm:px-8 py-2 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-2 truncate">
               <span className="text-base">⚡</span>
@@ -215,7 +215,7 @@ export default function Layout() {
         )}
 
         {/* Faixa de Suspensão */}
-        {escritorio.situacao === "SUSPENSO" && (
+        {escritorio?.situacao === "SUSPENSO" && (
           <div className="bg-debit text-white px-4 sm:px-8 py-2 text-xs sm:text-sm font-bold flex items-center justify-between gap-3">
             <span>⚠️ Acesso do escritório suspenso. Fale com a MakerPixel para regularizar.</span>
             <a href={linkContratarWhatsApp(escritorio)} target="_blank" rel="noreferrer" className="bg-white text-debit px-2.5 py-0.5 rounded text-xs font-bold">Falar no WhatsApp</a>
@@ -235,7 +235,7 @@ export default function Layout() {
               className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand-soft/40 px-3 py-1 text-xs font-semibold text-brand hover:border-brand-fill transition-colors"
             >
               <span>🏢</span>
-              <span className="max-w-[150px] truncate">{escritorio.nomeFantasia || escritorio.razaoSocial}</span>
+              <span className="max-w-[150px] truncate">{escritorio ? (escritorio.nomeFantasia || escritorio.razaoSocial) : "MakerPixel Contábil"}</span>
               <span className="text-[10px] opacity-75">▾</span>
             </Link>
             {comMes && <Competencia />}
@@ -249,13 +249,13 @@ export default function Layout() {
         <div className={"flex-1 min-w-0 " + (naModulo ? "" : "px-4 sm:px-8 py-6 pb-24")}><Outlet context={{ titulo }} /></div>
       </main>
       <TrocarSenha aberta={trocarSenha} aoFechar={() => setTrocarSenha(false)} />
-      {stTeste.expirado && (
+      {stTeste?.expirado && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="cartao p-8 max-w-md w-full bg-surface border-line text-center space-y-4">
             <span className="text-4xl block">⏳</span>
             <h2 className="text-xl font-bold text-ink">Período de teste concluído</h2>
             <p className="text-sm text-muted">
-              O período de demonstração do escritório <strong>{escritorio.razaoSocial}</strong> chegou ao fim.
+              O período de demonstração do escritório <strong>{escritorio?.razaoSocial || "Contábil"}</strong> chegou ao fim.
               Conforme a LGPD, os dados cadastrados ficarão armazenados de forma segura por até 30 dias para contratação.
             </p>
             <div className="pt-2 flex flex-col gap-2">
