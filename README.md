@@ -1,105 +1,130 @@
-# ⚡ MakerPixel Techsystem — Gestão Financeira, Inteligência Contábil & Tributária
+# ⚡ MakerPixel Contábil — Plataforma SaaS Multi-Escritório, Inteligência Tributária & Gestão Contábil
 
 <div align="center">
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00E5FF?style=for-the-badge&logo=github&logoColor=black)](https://mauricio-g-oliveira.github.io/makerpixel-gestao/)
+[![Backend](https://img.shields.io/badge/Backend-Java%2021%20%7C%20Spring%20Boot%203-F80000?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Database](https://img.shields.io/badge/PostgreSQL-16%20%7C%20RLS%20Enabled-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![PWA Ready](https://img.shields.io/badge/PWA-Desktop%20%26%20Mobile-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://mauricio-g-oliveira.github.io/makerpixel-gestao/)
-[![Tests](https://img.shields.io/badge/Testes-340%2B%20Passing%20(node%3Atest)-10B981?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao)
+[![Tests](https://img.shields.io/badge/Testes-361%20Passing%20(node%3Atest)-10B981?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary%20%2F%20MakerPixel-00A3E0?style=for-the-badge)](LICENSE)
 
 <br />
 
-**Plataforma corporativa SaaS para Gestão Contábil, Financeira e Fiscal. Reúne integração bancária multi-formato (OFX/PDF/Excel), conciliação com ERPs contábeis (SCI Único), apuração tributária (ICMS, ISS, Auditor IBS/CBS Reforma Tributária LC 214/2025), departamento societário/cadastro de empresas, distribuição de lucros com IRRF/EFD-Reinf e encerramento de exercício contábil.**
+**Solução corporativa SaaS multi-tenant desenvolvida pela MakerPixel (Tubarão/SC) voltada para escritórios de contabilidade. Trabalha em sincronia com os principais ERPs contábeis do mercado (SCI Único, Acessórias), eliminando retrabalho de planilhas, importando extratos bancários multi-banco, auditando limites do MEI/Simples Nacional, consultando a Receita Federal em tempo real e monitorando prazos com antecedência.**
 
-[Acessar Demonstração Online](https://mauricio-g-oliveira.github.io/makerpixel-gestao/) • [Modelo de Branches](docs/GIT.md) • [Repositório GitHub](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao)
+[Acessar Demonstração Online](https://mauricio-g-oliveira.github.io/makerpixel-gestao/) • [Modelo de Governança Git](docs/GIT.md) • [Repositório GitHub](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao)
 
 </div>
 
 ---
 
-## 💎 Destaques da Arquitetura & Portfólio
+## 💎 Destaques de Engenharia & Portfólio
 
-Projetado sob padrões de engenharia sênior para atender operações contábeis de alta exigência, segurança de dados e alta performance:
+Projetado sob padrões de excelência de engenharia de software sênior para atender operações contábeis de alto volume com isolamento absoluto de dados:
 
-- 🛡️ **Privacidade & Segurança (Client-Side First)**: Processamento seguro de extratos bancários confidenciais (PDF, OFX, CSV, Excel) e notas fiscais XML diretamente no navegador. Suporte total à LGPD sem expor dados desnecessários a servidores externos.
-- ⚡ **Stack Moderna & Reativa**: Construído com **React 18**, **React Router 6 (HashRouter)**, **Tailwind CSS 3** e **Vite 5**. Arquitetura desacoplada onde regras de negócio puras (`src/lib/*.mjs`) residem fora do ciclo de vida dos componentes React, garantindo **testabilidade de 100%** via `node:test`.
-- 📱 **PWA Instalável Desktop & Mobile**: Suporte a instalação nativa com Service Worker inteligente (`self.skipWaiting()`), cache de assets estáticos e funcionamento offline.
-- 🎨 **Identidade Visual Obsidian Cyber Dark**: Design system profissional escuro com contrastes em ciano neon (`#00E5FF`), modo claro com conformidade WCAG AAA, navegação expansível e responsiva.
-- 🏛️ **Auditor da Reforma Tributária (LC 214/2025 & LC 227/2026)**: Auditoria fiscal de XMLs de NF-e e NFS-e, validando CSTs, cClassTrib, bases reduzidas e 445 NCMs tabelados da nova legislação fiscal brasileira.
-- 🔌 **Preparado para Backend Java Spring Boot + PostgreSQL**: Camada de serviço com desacoplamento arquitetural e adaptadores prontos para chavear entre persistência local (IndexedDB / localStorage) e REST API corporativa com JWT.
+- 🏢 **Arquitetura Multi-Tenant com Isolamento em 3 Níveis**:
+  - `ADMIN_PRODUTO` (MakerPixel): Gestão de escritórios, planos, módulos ativos, suspensão e conversão.
+  - `ADMIN_ESCRITORIO`: Gestão de equipe interna e permissões do escritório.
+  - `USUARIO`: Operação diária nas áreas liberadas com as empresas da carteira.
+- 🔒 **Row-Level Security (RLS) & Tenant Isolation**: Segurança a nível de linha no PostgreSQL (`escritorio_id`) assegurando que nenhuma requisição ou erro de aplicação exponha dados entre escritórios concorrentes.
+- ⏱️ **Acesso de Teste por Dias (Trial Engine)**: Criação de trials de 1 a 30 dias com expiração conferida no servidor (às 23:59:59 de Brasília), senhas provisórias seguras e legíveis (`Xxxx-0000-xxxx`), gerador automático de convites para WhatsApp/E-mail, prorrogação e expurgo automático de dados após 30 dias (LGPD).
+- 🔍 **Consulta de CNPJ na Receita Federal**: Integração resiliente com timeout de 12 segundos, cache inteligente de 24 horas, validação de dígitos verificadores, preenchimento não-destrutivo de cadastros vazios, importação automática de sócios do QSA e detecção de situação cadastral (com badges de alerta para empresas não ativas).
+- 📈 **Motor de Alerta de Limite de Faturamento do MEI e Simples Nacional (2026)**:
+  - Tabela de limites vigentes: MEI R$ 81.000,00/ano, Simples Nacional R$ 4.800.000,00/ano e Sublimite ICMS/ISS R$ 3.600.000,00/ano.
+  - Cálculo proporcional para empresas abertas no ano-calendário.
+  - Consolidação obrigatória de matriz e filiais pelo CNPJ raiz (primeiros 8 dígitos).
+  - Níveis de alerta (`OK`, `ATENÇÃO`, `ACIMA`, `EXCESSO > 20%`) com projeção de estouro anual e consequências legais imediatas e retroativas.
+- 🤝 **Suporte com Permissão (24 horas)**: O suporte técnico da MakerPixel só acessa dados mediante liberação expressa do administrador do escritório, com duração máxima de 24 horas, modo somente leitura, banner persistente e log completo de auditoria.
 
 ---
 
-## 🏛️ Arquitetura do Sistema
+## 🏛️ Topologia Arquitetural
 
 ```mermaid
 flowchart TD
-    subgraph UI ["Camada de Apresentação (React 18 + Tailwind 3)"]
-        A[Topbar & PWA Controls]
-        B[Sidebar Responsiva & Navegação]
-        C[Theme Engine: Obsidian Cyber Dark & Light]
-        D[15 Telas Nativas: Início, Integração, Conciliação, Fiscal, DP, etc.]
-        E[Widget de Suporte Integrado]
+    subgraph Client ["Frontend Reativo (React 18 + Vite + Tailwind + PWA)"]
+        UI1[Painel MakerPixel SaaS: Gestão de Escritórios & Trials]
+        UI2[Ficha Cadastral: Busca Receita & QSA]
+        UI3[Painel de Limites MEI & Simples Nacional 2026]
+        UI4[Módulos Contábeis: Integração SCI Único, Conciliação, Fiscal, Lucros]
+        SW[Service Worker PWA Offline]
     end
 
-    subgraph Hooks ["Camada Reativa (Custom Hooks)"]
-        H1[useDepCadastro]
-        H2[useLucros]
-        H3[useEmDia]
-        H4[useAuth & useSyncExternalStore]
+    subgraph Gateway ["Segurança & Camada de Controle"]
+        SEC[Spring Security + JWT Stateless]
+        TC[TenantContext: ThreadLocal Isolation]
+        RLS_POL[PostgreSQL Row-Level Security]
     end
 
-    subgraph CoreEngine ["Regras de Negócio Puras (ES Modules em src/lib/ e src/legado/)"]
-        F1[Parser Extratos: PDF / OFX / Excel / TXT]
-        F2[Motor de Conciliação Multi-Critério]
-        F3[Auditor Fiscal IBS/CBS & Tabela LC 214/2025]
-        F4[Motor de Encerramento Contábil & CMV]
-        F5[Distribuição de Lucros, IRRF & EFD-Reinf]
-        F6[Motor de Autenticação PBKDF2]
+    subgraph Backend ["Backend API (Java 21 + Spring Boot 3.3.4)"]
+        AUTH_SRV[AuthService: Trial Expiration & Password Rules]
+        ESC_SRV[EscritorioService: Trial, LGPD Job & Auditoria]
+        REC_SRV[ReceitaFederalService: BrasilAPI + 12s Timeout + 24h Cache]
+        LIM_SRV[LimiteFaturamentoService: Motor Tributário MEI/Simples]
+        EMP_SRV[EmpresaService: CRUD Multi-Tenant & Merge Não-Destrutivo]
     end
 
-    subgraph Storage ["Persistência & Integração"]
-        S1[(LocalStorage & IndexedDB Seguro)]
-        S2[Exportador Homologado SCI Único TXT / CSV]
-        S3[API Client REST: Java 21 / Spring Boot / PostgreSQL]
+    subgraph Storage ["Persistência & Dados"]
+        PG[(PostgreSQL 16: Multi-Tenant RLS)]
+        FLY[Flyway Migrations V1]
     end
 
-    UI --> Hooks
-    Hooks --> CoreEngine
-    CoreEngine --> Storage
+    subgraph External ["Serviços Externos"]
+        BRAPI[BrasilAPI / Receita Federal]
+    end
+
+    Client -->|REST + Bearer JWT| SEC
+    SEC --> TC
+    TC --> Backend
+    REC_SRV -->|Timeout 12s / Cache 24h| BRAPI
+    Backend --> RLS_POL
+    RLS_POL --> PG
+    FLY -.-> PG
 ```
 
 ---
 
-## 📦 Módulos Funcionais
+## 📦 Módulos Funcionais da Plataforma
 
-### 1. 🔄 Integração Contábil & ERP (`/integracao`)
-- **Parsers de Extratos Bancários**: Leitura automática de OFX, PDF (Itaú, Santander, Sicoob, Sicredi, Caixa, BB, Nubank, Inter, C6, Banrisul, etc.) e Excel.
-- **Regras Contábeis**: Classificação automática por histórico, favorecido e conta contábil.
-- **Exportação Homologada**: Gera arquivo posicional para ERPs contábeis (SCI Único, etc.) por matriz e filiais, além de relatórios de pendências e backup JSON.
+### 1. 🏢 Painel da MakerPixel (`/admin-makerpixel`)
+- Visão executiva de todos os escritórios clientes e em fase de testes.
+- Gerador de acesso de teste (duração em dias, senha provisória padrão `Xxxx-0000-xxxx`, carga opcional de dados fictícios).
+- Modal de convite pronto para envio via WhatsApp ou E-mail.
+- Prorrogação de testes, conversão direta em cliente ativo, suspensão com modo leitura e reativação.
+- Switcher instantâneo de escritório para validação rápida de layout e suporte.
 
-### 2. ⚖️ Conciliação Bancária (`/conciliacao`)
-- Cruzamento automatizado de **Extrato × Planilha / Balancete / XMLs** com tolerância temporal de compensação bancária e agrupamentos manuais com justificativa de divergência.
+### 2. 🔍 Departamento Societário & Consulta Receita Federal (`/departamento-cadastro/...`)
+- Botão "Buscar na Receita" com validação instantânea de dígitos verificadores do CNPJ.
+- Preenchimento inteligente não-destrutivo: atualiza somente campos vazios (razão social, nome fantasia, endereço completo, telefone, regime tributário sugerido e sócios do QSA).
+- Badge de situação cadastral com alerta em vermelho para situações BAIXADA, INAPTA, SUSPENSA ou NULA.
+- Cache de 24 horas por CNPJ para evitar rate limits.
 
-### 3. 🧾 Inteligência Fiscal & Reforma Tributária (`/icms`, `/iss`, `/ibs-cbs`)
-- **Apuração de ICMS**: Regras de crédito/débito com ajustes específicos por empresa.
-- **ISS Municipal**: Importação de XMLs de NFS-e de portais tributários municipais.
-- **Auditor IBS/CBS (LC 214/2025 & LC 227/2026)**: Leitura de XMLs de NF-e/NFS-e com validação de CST, cClassTrib, alíquotas estaduais/municipais e comparação com banco de 445 NCMs da nova reforma.
+### 3. 📊 Motor de Limites de Faturamento MEI & Simples Nacional 2026
+- Monitoramento contínuo das faixas de faturamento de 2026 (MEI R$ 81k, Simples R$ 4.8M, Sublimite R$ 3.6M).
+- Soma automática de matriz e filiais pelo CNPJ raiz (0001, 0002, etc.).
+- Proporcionalidade exata por mês de início de atividade.
+- Projeção estatística apontando o mês estimado de desenquadramento ("No ritmo atual, passa em novembro").
+- Exibição das consequências tributárias reais (exclusão no ano seguinte vs desenquadramento retroativo).
 
-### 4. 🗂️ Departamento Societário & Cadastro (`/departamento-cadastro/...`)
-- **Consulta & Ficha Cadastral**: Busca rápida por CNPJ com consolidação de matriz, filiais, sócios, faturamento de 12 meses e certidões.
-- **Grade de Alvarás**: Monitoramento de alvarás de funcionamento, sanitário e corpo de bombeiros com indicadores visuais de situação.
-- **Certidões & Certificados Digitais A1/A3**: Alertas preditivos de vencimento, leitor de metadados em PDF e gerador de notificações para clientes via WhatsApp/e-mail.
+### 4. 🔄 Integração Contábil & SCI Único (`/integracao`)
+- Leitura automatizada de extratos bancários em formato OFX, PDF e Excel.
+- Reconhecimento inteligente de contas contábeis e distribuição por unidade de negócio.
+- Exportação homologada de arquivos relacionais e posicionais para importação no SCI Único.
 
-### 5. 📊 Fechamento, Encerramento & Distribuição de Lucros (`/fechamento`, `/encerramento`, `/lucros`, `/reinf`)
-- **Encerramento de Exercício**: Inventário de estoques, compras do período, cálculo de CMV e apuração de lucro bruto consolidado.
-- **Distribuição de Lucros & EFD-Reinf**: Cálculo de retenção de IRRF (10% acima de R$ 50 mil mensais), prazos de DARF e exportação pronta para a escrituração do EFD-Reinf.
+### 5. ⚖️ Conciliação Bancária (`/conciliacao`)
+- Cruzamento automatizado de extrato bancário contra lançamentos e planilhas avulsas, com tolerância configurável de compensação bancária e histórico de divergências.
 
-### 6. 📅 Compliance "Em Dia" & Horas (`/em-dia`, `/horas`)
-- Matriz de obrigações fiscais/contábeis por setor, responsável e competência com workflow de passagem de bastão e apontamento de horas da equipe.
+### 6. 🧾 Inteligência Fiscal & Reforma Tributária (`/icms`, `/iss`, `/ibs-cbs`)
+- Prévia de apuração de ICMS e conferência de retenções de ISS municipal.
+- Auditor da Reforma Tributária (LC 214/2025 e LC 227/2026): verificação de CSTs, cClassTrib e alíquotas com base em 445 NCMs tabelados.
+
+### 7. 💵 Distribuição de Lucros & EFD-Reinf (`/lucros`, `/reinf`)
+- Cálculo automático da retenção de IRRF de 10% para distribuições que ultrapassam R$ 50.000,00 no mês por sócio.
+- Prazos de vencimento do DARF (dia 20) e transmissão da REINF (dia 15), com antecipação para dias úteis.
 
 ---
 
@@ -107,69 +132,63 @@ flowchart TD
 
 | Camada | Tecnologia | Descrição |
 |---|---|---|
-| **Frontend Framework** | React 18.3 | Arquitetura SPA moderna com renderização eficiente |
-| **Roteamento** | React Router 6.26 (HashRouter) | Compatível com GitHub Pages e execução em subdiretórios |
-| **Estilização & UI** | Tailwind CSS 3.4 + Design Tokens | Identidade Obsidian Cyber Dark (`#060B13`, `#0A1220`, `#00E5FF`) |
-| **Build & Tooling** | Vite 5.4 | Bundler de altíssima velocidade e HMR |
-| **Processamento de Arquivos** | SheetJS, ExcelJS, PDF.js, JSZip | Parsers client-side carregados sob demanda (lazy loading) |
-| **PWA & Offline** | Service Worker customizado (`pwa/`) | Instalável no desktop/mobile, ativação com `self.skipWaiting()` |
-| **Testes Automatizados** | Node.js Test Runner (`node:test`) | Mais de 340 testes unitários e de integração das regras de negócio |
-| **CI/CD** | GitHub Actions | Pipeline automatizada de testes, build e deploy contínuo |
-| **Backend (Roadmap)** | Java 21 + Spring Boot 3 + PostgreSQL | Persistência corporativa centralizada para múltiplos usuários |
+| **Backend Framework** | Java 21 + Spring Boot 3.3.4 | API corporativa de alta performance, RESTful, Stateless |
+| **Segurança & Auth** | Spring Security + JJWT 0.12.6 | Autenticação JWT, BCrypt, proteção contra brute force |
+| **Persistência & RLS** | Spring Data JPA + Hibernate 6 + PostgreSQL 16 | Multi-tenant via Row-Level Security (`escritorio_id`) |
+| **Migrações de Banco** | Flyway 10 | Versionamento declarativo de banco de dados (`V1__init_makerpixel.sql`) |
+| **Infraestrutura** | Docker + Docker Compose | Ambientes reproduzíveis para API e PostgreSQL |
+| **Frontend SPA** | React 18.3 + TypeScript + Vite 5.4 | Interface modular, componentizada e reativa |
+| **Estilização & Design** | Tailwind CSS 3.4 | Identidade Obsidian Cyber Dark com tema claro WCAG AAA |
+| **PWA & Offline** | Service Worker customizado (`pwa/`) | Instalável nativamente em Desktop e Mobile |
+| **Testes Automatizados** | Node.js Test Runner (`node:test`) + JUnit 5 | 361 testes unitários cobrindo 100% das regras de negócio |
 
 ---
 
-## 🌿 Branches & Governança (Git Flow)
+## 🚀 Como Executar o Projeto
 
-Adotamos o fluxo de governança profissional baseado em **Git Flow**:
+### 1. Frontend (Demonstração Completa)
+```bash
+# Instalar dependências
+npm install
+
+# Executar suíte de testes (361 testes automatizados)
+npm test
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+# Acesse: http://localhost:5173
+```
+
+### 2. Backend (Docker & Spring Boot)
+```bash
+# Subir PostgreSQL e API via Docker Compose
+docker compose up -d
+
+# Ou executar o backend localmente com Maven:
+cd backend
+./mvnw clean spring-boot:run
+# API disponível em: http://localhost:8080
+```
+
+---
+
+## 🌿 Governança de Branches (Git Flow)
+
+Adotamos a convenção profissional de versionamento e governança de código:
 
 ```
 main        ●───────────────────────●───────────────────────▶  Produção (Deploy no GitHub Pages)
              \                     ↗ \                     ↗
 develop       ●───────●───────────●   ●───────●───────────●   Homologação & Staging
                \     ↗ \         ↗     \     ↗ \         ↗
-feat/*          ●───●   ●───────●       ●───●   ●───────●     Features e Correções (via PRs)
+feat/*          ●───●   ●───────●       ●───●   ●───────●     Features & Sprints (via PRs)
 ```
 
-- **`main`**: Código em produção, estável e deployado automaticamente.
-- **`develop`**: Linha de homologação para validação conjunta de novos módulos.
-- **`feat/*`**, **`fix/*`**: Branches efêmeras criadas a partir de `develop` e mescladas exclusivamente via Pull Request com suíte de testes verde.
+- **`main`**: Código em produção, estável e deployado no GitHub Pages.
+- **`develop`**: Linha de homologação de features integradas.
+- **`feat/*`**: Branches de desenvolvimento por fase/funcionalidade.
 
-Consulte o guia completo em [`docs/GIT.md`](docs/GIT.md).
-
----
-
-## 🚀 Como Executar Localmente
-
-### Pré-requisitos
-- **Node.js 20+** (recomendado Node 22 ou 24)
-- **npm 9+**
-
-### Instalação e Desenvolvimento
-```bash
-# Clonar o repositório
-git clone https://github.com/Mauricio-G-Oliveira/makerpixel-gestao.git
-cd makerpixel-gestao
-
-# Instalar dependências
-npm install
-
-# Iniciar servidor de desenvolvimento
-npm run dev
-# Acesse em http://localhost:5173
-```
-
-### Comandos de Teste e Build
-```bash
-# Executar a suíte de testes automatizados
-npm test
-
-# Gerar o build otimizado para produção (dist/)
-npm run build
-
-# Pré-visualizar o build de produção localmente
-npm run preview
-```
+Consulte o documento completo em [`docs/GIT.md`](docs/GIT.md).
 
 ---
 

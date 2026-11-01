@@ -55,6 +55,14 @@ export function montarMenu(pode, ehAdmin) {
     // Em Dia: tela em React (a grade simples); o módulo antigo saiu
     { titulo: "Escritório", itens: modulos("Escritório").concat(pode("mod-em-dia") ? [{ id: "em-dia", label: "Em Dia", para: "/em-dia", icone: "emdia" }] : []) }
   ];
-  if (ehAdmin) secoes.push({ titulo: "Administração", itens: [{ id: "usuarios", label: "Usuários", para: "/usuarios", icone: "usuarios" }] });
+  if (ehAdmin) {
+    secoes.push({
+      titulo: "Administração",
+      itens: [
+        { id: "usuarios", label: "Usuários", para: "/usuarios", icone: "usuarios" },
+        { id: "admin-makerpixel", label: "Painel MakerPixel (SaaS)", para: "/admin-makerpixel", icone: "empresa" }
+      ]
+    });
+  }
   return secoes.filter((s) => s.itens.length);
 }

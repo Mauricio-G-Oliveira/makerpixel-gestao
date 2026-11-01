@@ -10,6 +10,7 @@ import { useDepCadastro } from "../lib/useDepCadastro.js";
 import { nomeDoTipo, textoSituacao } from "../lib/depCadastro.mjs";
 import { Selo } from "../componentes/contabil/ui.jsx";
 import Icone from "../componentes/Icone.jsx";
+import { avaliarTodasEmpresas } from "../lib/limitesFaturamento.mjs";
 
 const COR_SETOR = { contabil: "border-brand-fill", fiscal: "border-ink-2", pessoal: "border-credit", cadastro: "border-warn", escritorio: "border-info" };
 const ICO_SETOR = { contabil: "bg-brand-soft text-brand", fiscal: "bg-surface-2 text-ink-2 border border-line", pessoal: "bg-ok-soft text-credit", cadastro: "bg-warn-soft text-warn", escritorio: "bg-info-soft text-info" };
@@ -22,6 +23,7 @@ function useResumo(usuario, pode) {
   const [versao, setVersao] = useState(0);
   const [, versaoEmDia] = useEmDia();
   const [, versaoLucros] = useLucros();
+  const [svcCad, versaoCad] = useDepCadastro();
   useEffect(() => {
     const f = () => setVersao((n) => n + 1);
     window.addEventListener("storage", f);
@@ -62,9 +64,29 @@ function useResumo(usuario, pode) {
             sub: rf.pendentes ? rf.pendentes + " a confirmar até " + rf.prazo.slice(8) + "/" + rf.prazo.slice(5, 7) : "Todas confirmadas", tom: rf.pendentes && rf.prazo < ctx.hoje ? "perigo" : rf.pendentes ? "alerta" : "", ir: { tab: "reinf" } });
         }
       }
+      // Alerta de Limites MEI e Simples Nacional
+      if (pode("mod-vencimentos")) {
+        const anoAtual = new Date().getFullYear();
+        const mesAtual = new Date().getMonth() + 1;
+        const emps = svcCad.empresas();
+        const fats = { [String(anoAtual)]: svcCad.faturamentos(String(anoAtual)) };
+        const avs = avaliarTodasEmpresas(emps, fats, anoAtual, anoAtual, mesAtual);
+        const atencaoCount = avs.filter((a) => a.nivel !== "OK").length;
+        if (atencaoCount > 0) {
+          r.vazio = false;
+          r.numeros.push({
+            id: "limites-mei-simples",
+            rotulo: "Limites MEI / Simples",
+            valor: String(atencaoCount),
+            sub: atencaoCount === 1 ? "empresa requer atenção" : "empresas requerem atenção",
+            tom: "alerta",
+            ir: { rota: "/departamento-cadastro/faturamentos" }
+          });
+        }
+      }
       return r;
     } catch (e) { console.error("Início:", e); return null; }
-  }, [usuario, pode, versao, versaoEmDia, versaoLucros]);   // eslint-disable-line
+  }, [usuario, pode, versao, versaoEmDia, versaoLucros, versaoCad]);   // eslint-disable-line
 }
 
 const SELO_SIT = { vencido: "erro", "7": "pendente", "30": "novo", ok: "ok", sem: "neutro" };
@@ -120,6 +142,7 @@ export default function Inicio() {
 
   const ir = (alvo) => {
     if (!alvo) return;
+    if (alvo.rota) { navegar(alvo.rota); return; }
     if (alvo.acaoApp === "extratos") { navegar("/integracao"); return; }
     if (alvo.tab === "mod-em-dia") { navegar("/em-dia"); return; }
     // "Vence em 7 dias": desce até a lista do que venceu (cada linha leva à aba certa)

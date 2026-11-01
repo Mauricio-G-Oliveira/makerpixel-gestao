@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { REGIMES, TIPOS_LUCRO_REAL, ativaNoMes, planilhaEmpresas } from "../../lib/depCadastro.mjs";
+import { consultarCnpjReceita, preencherCamposVazios } from "../../lib/consultaCnpj.mjs";
 import { carregarXlsx } from "../../lib/leitores.js";
 import { useDepCadastro } from "../../lib/useDepCadastro.js";
 import { useEmDia } from "../../lib/useEmDia.js";
@@ -33,10 +34,34 @@ export function FormEmpresa({ editando, aoFechar }) {
   });
   const [desde, setDesde] = useState(emDia.mesPadrao());
   const [erro, setErro] = useState("");
+  const [buscandoReceita, setBuscandoReceita] = useState(false);
   const muda = (c) => (e) => setF((x) => Object.assign({}, x, { [c]: e.target.value }));
   const mudaSocio = (i, c, v) => setSocios((l) => l.map((x, k) => (k === i ? Object.assign({}, x, { [c]: v }) : x)));
   const soma = socios.reduce((t, x) => t + (parseFloat(String(x.percentual || 0).replace(",", ".")) || 0), 0);
   const trocou = setores.some((s) => editando && (resp[s.id] || {})[editando.id] && (r[s.id] || "") !== ((resp[s.id] || {})[editando.id] || ""));
+
+  const buscarReceita = async () => {
+    const doc = String(f.documento || "").trim();
+    if (!doc) {
+      setErro("Digite o CNPJ primeiro para buscar na base da Receita Federal.");
+      return;
+    }
+    setErro("");
+    setBuscandoReceita(true);
+    try {
+      const dadosRec = await consultarCnpjReceita(doc);
+      setF((atual) => preencherCamposVazios(atual, dadosRec));
+      if ((!socios || !socios.length) && dadosRec.socios && dadosRec.socios.length) {
+        setSocios(dadosRec.socios);
+      }
+      aviso(`Dados da Receita obtidos: ${dadosRec.nome} (${dadosRec.situacaoCadastral})`);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setBuscandoReceita(false);
+    }
+  };
+
   const salvar = (ev) => {
     ev.preventDefault();
     try {
@@ -53,11 +78,24 @@ export function FormEmpresa({ editando, aoFechar }) {
     <Janela aberta titulo={editando ? "Editar empresa" : "Nova empresa"} aoFechar={aoFechar} largura="max-w-[720px]"
       rodape={<><button type="button" className="btn-fantasma" onClick={aoFechar}>Cancelar</button><button type="submit" form="form-emp" className="btn-primario">Salvar</button></>}>
       <form id="form-emp" onSubmit={salvar} className="grid sm:grid-cols-6 gap-3">
+        {f.situacaoCadastral && f.situacaoCadastral !== "ATIVA" && (
+          <div className="sm:col-span-6 px-3 py-2 rounded-lg bg-debit-soft text-debit text-xs font-semibold flex items-center gap-2">
+            <Icone nome="venc" className="w-4 h-4 shrink-0" />
+            <span>Situação na Receita Federal: <strong>{f.situacaoCadastral}</strong> {f.dataSituacaoCadastral ? `desde ${f.dataSituacaoCadastral.split("-").reverse().join("/")}` : ""}</span>
+          </div>
+        )}
         <Campo rotulo="Razão social" id="emp-nome" className="sm:col-span-4"><input id="emp-nome" value={f.nome} onChange={muda("nome")} data-foco autoComplete="off" /></Campo>
         <Campo rotulo="Código" id="emp-cod" className="sm:col-span-2"><input id="emp-cod" value={f.codigo} onChange={muda("codigo")} autoComplete="off" /></Campo>
         <Campo rotulo="Nome fantasia" id="emp-fan" className="sm:col-span-6"><input id="emp-fan" value={f.fantasia} onChange={muda("fantasia")} autoComplete="off" /></Campo>
         <Campo rotulo="CNPJ/CPF" id="emp-doc" className="sm:col-span-3" dica="0001 no CNPJ = matriz; os outros números são filiais.">
-          <input id="emp-doc" value={f.documento} onChange={muda("documento")} autoComplete="off" inputMode="numeric" /></Campo>
+          <div className="flex gap-1.5 items-center">
+            <input id="emp-doc" value={f.documento} onChange={muda("documento")} autoComplete="off" inputMode="numeric" className="flex-1" />
+            <button type="button" onClick={buscarReceita} disabled={buscandoReceita} title="Consulta na base pública da Receita Federal (BrasilAPI) e preenche os campos vazios"
+              className="btn-contorno text-brand border-brand-fill text-xs h-9 px-2.5 shrink-0 whitespace-nowrap">
+              {buscandoReceita ? "Buscando…" : "Buscar na Receita"}
+            </button>
+          </div>
+        </Campo>
         <Campo rotulo="Segmento" id="emp-seg" className="sm:col-span-3"><input id="emp-seg" value={f.segmento} onChange={muda("segmento")} placeholder="Comércio, serviços, indústria…" autoComplete="off" /></Campo>
         <Campo rotulo="Inscrição estadual" id="emp-ie" className="sm:col-span-2"><input id="emp-ie" value={f.ie} onChange={muda("ie")} autoComplete="off" /></Campo>
         <Campo rotulo="UF da IE" id="emp-ieuf" className="sm:col-span-1"><input id="emp-ieuf" value={f.ieUf} onChange={muda("ieUf")} maxLength={2} autoComplete="off" /></Campo>

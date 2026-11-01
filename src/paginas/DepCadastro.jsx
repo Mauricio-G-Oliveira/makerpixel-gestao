@@ -14,6 +14,7 @@ import { useAvisos } from "../componentes/Avisos.jsx";
 import Janela from "../componentes/Janela.jsx";
 import Icone from "../componentes/Icone.jsx";
 import { BotaoArquivo, Campo, Segmentado, Selo, dataBR, numero } from "../componentes/contabil/ui.jsx";
+import { avaliarLimites, avaliarTodasEmpresas } from "../lib/limitesFaturamento.mjs";
 
 /*
  * Departamento Cadastro: Certidões e Alvarás (com vencimento), Faturamentos (por empresa e mês) e
@@ -372,6 +373,18 @@ function Ficha({ id, aoVoltar }) {
   const c = f.empresa;
   const setores = emDia.setores();
   const maxFat = Math.max(1, ...f.faturamento.meses.map((x) => x.valor || 0));
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth() + 1;
+  const fatAno = (svc.faturamentos(String(anoAtual)) || {})[c.id] || {};
+  const limiteEmpresa = useMemo(() => {
+    return avaliarLimites({
+      empresa: c,
+      ano: anoAtual,
+      faturamentos: fatAno,
+      anoAtual,
+      mesAtual
+    });
+  }, [c, fatAno, anoAtual, mesAtual]);
   const docLinha = (d) => (
     <li key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5">
       <span className="flex-1 min-w-[150px] text-[13.5px]">{nomeDoTipo(d)}{d.observacoes && <span className="block text-[12px] text-muted truncate" title={d.observacoes}>{d.observacoes}</span>}</span>
@@ -391,6 +404,8 @@ function Ficha({ id, aoVoltar }) {
           <p className="text-[13.5px] text-ink-2 tabular-nums mt-0.5">{[c.documento || "sem CNPJ/CPF", c.codigo && "cód. " + c.codigo, c.regime, [c.cidade, c.uf].filter(Boolean).join("/")].filter(Boolean).join(" · ")}</p>
           <div className="flex flex-wrap gap-1.5 mt-2">
             {c.baixa && <Selo tipo="erro">Baixada em {dataBR(c.baixa)}</Selo>}
+            {c.situacaoCadastral && c.situacaoCadastral !== "ATIVA" && <Selo tipo="erro">Receita: {c.situacaoCadastral}</Selo>}
+            {c.situacaoCadastral === "ATIVA" && <Selo tipo="ok">Receita: Ativa</Selo>}
             {f.matriz && <Link to={"/departamento-cadastro/buscar?empresa=" + f.matriz.id}><Selo tipo="neutro">Filial de {f.matriz.nome} →</Selo></Link>}
             {c.filial && !f.matriz && <Selo tipo="neutro">Filial (matriz não cadastrada)</Selo>}
             {f.filiais.length > 0 && <Selo tipo="novo">Matriz · {f.filiais.length} filial(is)</Selo>}
@@ -401,6 +416,38 @@ function Ficha({ id, aoVoltar }) {
           <button type="button" className="btn-contorno btn-sm" onClick={() => setEditar(true)}>Editar empresa</button>
         </div>
       </div>
+
+      {limiteEmpresa && (
+        <div className="cartao px-5 py-3.5 bg-surface border-line">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] font-semibold">Limite de Faturamento · {anoAtual} ({limiteEmpresa.regime})</span>
+              {limiteEmpresa.proporcional && <span className="text-[11px] text-muted">(proporcional a {limiteEmpresa.mesesAtivos} meses)</span>}
+            </div>
+            <span className={"text-[12px] font-semibold px-2.5 py-0.5 rounded-full border " + (
+              limiteEmpresa.nivel === "OK" ? "border-credit/30 bg-ok-soft/30 text-credit" :
+              limiteEmpresa.nivel === "ATENCAO" ? "border-warn/40 bg-warn-soft/40 text-warn" :
+              "border-debit/40 bg-debit-soft/40 text-debit"
+            )}>
+              {limiteEmpresa.percentualUso}% do teto anual
+            </span>
+          </div>
+          <div className="w-full bg-surface-2 rounded-full h-2.5 relative overflow-hidden border border-line mb-1.5">
+            <div className={"h-full rounded-full " + (
+              limiteEmpresa.nivel === "OK" ? "bg-credit" : limiteEmpresa.nivel === "ATENCAO" ? "bg-warn" : "bg-debit"
+            )} style={{ width: `${Math.min(100, limiteEmpresa.percentualUso)}%` }} />
+          </div>
+          <div className="flex justify-between text-[12px] text-muted tabular-nums">
+            <span>Faturado: R$ {Core.formatBR(limiteEmpresa.totalAcumulado)}</span>
+            <span>Teto: R$ {Core.formatBR(limiteEmpresa.tetoAnual)}</span>
+          </div>
+          {limiteEmpresa.consequencia && (
+            <p className="mt-2 text-[12px] text-ink-2 bg-surface-2 p-2 rounded border border-line">
+              {limiteEmpresa.consequencia}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Bloco titulo="Alvarás">
@@ -607,6 +654,93 @@ function CelulaValor({ valor, aoMudar, rotulo }) {
     aria-label={rotulo} inputMode="decimal" className="h-8 w-[104px] px-2 text-right tabular-nums text-[13px] border-transparent bg-transparent hover:border-line focus:bg-surface" />;
 }
 
+function QuadroLimites({ ano }) {
+  const [svc, versao] = useDepCadastro();
+  const empresas = svc.empresas();
+  const faturamentosPorAno = { [ano]: svc.faturamentos(ano) };
+  const atual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth() + 1;
+  const avaliacoes = useMemo(() => {
+    return avaliarTodasEmpresas(empresas, faturamentosPorAno, parseInt(ano, 10), atual, mesAtual);
+  }, [empresas, svc, ano, versao]);
+
+  const atencaoOuAcima = avaliacoes.filter((a) => a.nivel !== "OK");
+
+  if (!avaliacoes.length) return null;
+
+  return (
+    <div className="cartao p-4 space-y-3 border-line bg-surface">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2.5">
+        <div>
+          <h3 className="text-[15px] font-semibold flex items-center gap-2">
+            <Icone nome="alvara" className="w-4 h-4 text-brand" />
+            Limites do MEI e do Simples Nacional · {ano}
+          </h3>
+          <p className="text-[12.5px] text-muted">
+            MEI: R$ 81.000/ano · Simples Nacional: R$ 4.800.000/ano (Sublimite ICMS/ISS: R$ 3.600.000). Matriz e filiais consolidadas pelo CNPJ raiz.
+          </p>
+        </div>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface-2 border border-line">
+          {atencaoOuAcima.length} {atencaoOuAcima.length === 1 ? "empresa requer atenção" : "empresas requerem atenção"}
+        </span>
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {avaliacoes.map((item) => {
+          const corNivel = {
+            OK: "border-credit/30 bg-ok-soft/30 text-credit",
+            ATENCAO: "border-warn/40 bg-warn-soft/40 text-warn",
+            ACIMA: "border-debit/40 bg-debit-soft/40 text-debit",
+            EXCESSO_20: "border-debit bg-debit-soft text-debit font-bold"
+          }[item.nivel];
+
+          const rotuloNivel = {
+            OK: "Em dia (< 80%)",
+            ATENCAO: "Atenção (≥ 80% ou projeção)",
+            ACIMA: "Acima do teto (até 20%)",
+            EXCESSO_20: "Excesso grave (> 20%)"
+          }[item.nivel];
+
+          const barPct = Math.min(100, item.percentualUso);
+          const barColor = item.nivel === "OK" ? "bg-credit" : item.nivel === "ATENCAO" ? "bg-warn" : "bg-debit";
+
+          return (
+            <div key={item.empresaId} className="rounded-lg border border-line bg-surface p-3 flex flex-col justify-between space-y-2.5 hover:border-brand-fill/50 transition-colors">
+              <div>
+                <div className="flex items-start justify-between gap-1.5">
+                  <strong className="text-[13.5px] font-semibold truncate leading-tight flex-1" title={item.empresaNome}>
+                    {item.empresaNome}
+                  </strong>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full border ${corNivel} shrink-0`}>
+                    {rotuloNivel}
+                  </span>
+                </div>
+                <p className="text-[12px] text-muted mt-0.5">{item.regime} {item.proporcional ? "· Proporcional no ano de abertura" : ""} {item.qtdFiliais ? `· ${item.qtdFiliais} filial(is)` : ""}</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[12.5px] mb-1 font-medium">
+                  <span>R$ {Core.formatBR(item.totalAcumulado)}</span>
+                  <span className="tabular-nums font-semibold">{item.percentualUso}% de R$ {Core.formatBR(item.tetoAnual)}</span>
+                </div>
+                <div className="w-full bg-surface-2 rounded-full h-2 relative overflow-hidden border border-line">
+                  <div className={`h-full rounded-full ${barColor}`} style={{ width: `${barPct}%` }} />
+                </div>
+              </div>
+
+              {item.consequencia && (
+                <p className="text-[11.5px] leading-tight text-ink-2 bg-surface-2 p-2 rounded border border-line">
+                  {item.consequencia}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Faturamentos() {
   const [svc, versao] = useDepCadastro();
   const atual = new Date().getFullYear();
@@ -623,6 +757,9 @@ function Faturamentos() {
         <div className="flex-1" />
         <Link to="/departamento-cadastro/empresas" className="btn-contorno btn-sm">Empresas</Link>
       </div>
+
+      <QuadroLimites ano={ano} />
+
       <div className="cartao overflow-hidden">
         {!lista.length ? <Vazio titulo="Nenhuma empresa cadastrada" texto="Cadastre as empresas (em Empresas), importe uma planilha de faturamento ou carregue a demonstração." /> : (
           <div className="overflow-x-auto relative">

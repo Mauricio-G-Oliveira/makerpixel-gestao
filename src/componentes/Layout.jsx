@@ -11,6 +11,14 @@ import Competencia from "./contabil/Competencia.jsx";
 import { useContabil } from "../lib/useContabil.js";
 import { useDepCadastro } from "../lib/useDepCadastro.js";
 import { instalarApp, usePwa } from "../lib/pwa.js";
+import {
+  escritorioAtivo,
+  statusTeste,
+  isSuporteAtivo,
+  revogarSuporte,
+  linkContratarWhatsApp,
+  definirEscritorioAtivo
+} from "../lib/multiEscritorio.mjs";
 
 const VERSAO = "1.0.0";
 const FECHADAS_PADRAO = { "Outras movimentações": 1, "Cadastros": 1 };
@@ -65,6 +73,23 @@ export default function Layout() {
   const [trocarSenha, setTrocarSenha] = useState(false);
   const { auth } = useAuth();
   const { instalar } = usePwa();
+
+  const [versaoEscritorio, setVersaoEscritorio] = useState(0);
+  const escritorio = useMemo(() => escritorioAtivo(), [versaoEscritorio]);
+  const stTeste = useMemo(() => statusTeste(escritorio), [escritorio]);
+  const [suporteAtivo, setSuporteAtivo] = useState(() => isSuporteAtivo());
+
+  useEffect(() => {
+    const fEsc = () => setVersaoEscritorio((v) => v + 1);
+    const fSup = () => setSuporteAtivo(isSuporteAtivo());
+    window.addEventListener("makerpixel:escritorio_mudou", fEsc);
+    window.addEventListener("makerpixel:suporte_mudou", fSup);
+    return () => {
+      window.removeEventListener("makerpixel:escritorio_mudou", fEsc);
+      window.removeEventListener("makerpixel:suporte_mudou", fSup);
+    };
+  }, []);
+
   useEffect(() => {   // sessão: ao voltar para a aba, confere se ainda vale (12 horas sem usar encerram)
     const f = () => {
       if (document.visibilityState !== "visible" || !auth) return;
@@ -161,6 +186,42 @@ export default function Layout() {
         </div>
       )}
       <main className="min-w-0 flex flex-col min-h-screen">
+        {/* Faixa de Teste Gratuito */}
+        {stTeste.emTeste && (
+          <div className="bg-gradient-to-r from-brand-fill/90 to-brand text-black px-4 sm:px-8 py-2 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2 truncate">
+              <span className="text-base">⚡</span>
+              <span className="truncate">
+                {stTeste.expirado ? "Seu período de teste terminou." : stTeste.terminaHoje ? "Seu teste gratuito termina hoje!" : `Período de teste gratuito: faltam ${stTeste.diasRestantes} dias.`}
+              </span>
+            </div>
+            <a
+              href={linkContratarWhatsApp(escritorio)}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-black text-white hover:bg-black/80 px-3 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-colors"
+            >
+              Quero contratar WhatsApp →
+            </a>
+          </div>
+        )}
+
+        {/* Faixa de Suporte 24h */}
+        {suporteAtivo && (
+          <div className="bg-amber-500 text-black px-4 sm:px-8 py-1.5 text-xs font-bold flex items-center justify-between gap-3">
+            <span>🛡️ Suporte MakerPixel acessando o escritório (somente leitura · sessão de 24h)</span>
+            <button type="button" onClick={() => { revogarSuporte(); setSuporteAtivo(false); }} className="underline hover:text-white">Encerrar acesso do suporte</button>
+          </div>
+        )}
+
+        {/* Faixa de Suspensão */}
+        {escritorio.situacao === "SUSPENSO" && (
+          <div className="bg-debit text-white px-4 sm:px-8 py-2 text-xs sm:text-sm font-bold flex items-center justify-between gap-3">
+            <span>⚠️ Acesso do escritório suspenso. Fale com a MakerPixel para regularizar.</span>
+            <a href={linkContratarWhatsApp(escritorio)} target="_blank" rel="noreferrer" className="bg-white text-debit px-2.5 py-0.5 rounded text-xs font-bold">Falar no WhatsApp</a>
+          </div>
+        )}
+
         <header className="flex items-center gap-3 flex-wrap px-4 sm:px-8 py-4 border-b border-line bg-canvas">
           <button type="button" className="lg:hidden btn-contorno h-10 w-10 p-0" aria-label="Abrir o menu" onClick={() => setGaveta(true)}><Icone nome="menu" /></button>
           <div className="flex-1 min-w-0">
@@ -168,6 +229,15 @@ export default function Layout() {
             <h1 className="text-[21px] sm:text-[22px] font-semibold tracking-tight truncate">{titulo.titulo}</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to="/admin-makerpixel"
+              title="Clique para alternar o escritório ou gerenciar planos e testes no Painel MakerPixel"
+              className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand-soft/40 px-3 py-1 text-xs font-semibold text-brand hover:border-brand-fill transition-colors"
+            >
+              <span>🏢</span>
+              <span className="max-w-[150px] truncate">{escritorio.nomeFantasia || escritorio.razaoSocial}</span>
+              <span className="text-[10px] opacity-75">▾</span>
+            </Link>
             {comMes && <Competencia />}
             {ehTeste && <span className="rounded-full bg-brand-soft text-brand text-[12px] font-bold uppercase tracking-wide px-2.5 py-1" title="Você entrou sem senha, no modo de teste.">Modo de teste</span>}
             <span className="hidden xl:inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-muted">
@@ -179,6 +249,35 @@ export default function Layout() {
         <div className={"flex-1 min-w-0 " + (naModulo ? "" : "px-4 sm:px-8 py-6 pb-24")}><Outlet context={{ titulo }} /></div>
       </main>
       <TrocarSenha aberta={trocarSenha} aoFechar={() => setTrocarSenha(false)} />
+      {stTeste.expirado && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="cartao p-8 max-w-md w-full bg-surface border-line text-center space-y-4">
+            <span className="text-4xl block">⏳</span>
+            <h2 className="text-xl font-bold text-ink">Período de teste concluído</h2>
+            <p className="text-sm text-muted">
+              O período de demonstração do escritório <strong>{escritorio.razaoSocial}</strong> chegou ao fim.
+              Conforme a LGPD, os dados cadastrados ficarão armazenados de forma segura por até 30 dias para contratação.
+            </p>
+            <div className="pt-2 flex flex-col gap-2">
+              <a
+                href={linkContratarWhatsApp(escritorio)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primario h-11 flex items-center justify-center gap-2 font-bold"
+              >
+                Falar com a MakerPixel no WhatsApp
+              </a>
+              <button
+                type="button"
+                onClick={() => { definirEscritorioAtivo("esc-modelo"); window.location.reload(); }}
+                className="btn-fantasma text-xs text-muted"
+              >
+                Trocar para Escritório Ativo (Modo Demonstração)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Suporte compacto={naModulo} contexto={() => ({
         tela: (titulo.sub && titulo.sub !== titulo.titulo ? titulo.sub + " › " : "") + titulo.titulo,
         usuario: usuario ? { nome: usuario.nome, email: usuario.email } : null, versao: VERSAO, sistema: "MakerPixel Techsystem"
