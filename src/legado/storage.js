@@ -18,8 +18,29 @@ var Store = (function () {
     return new Promise(function (ok, erro) {
       var req = versao ? indexedDB.open(nome, versao) : indexedDB.open(nome);
       if (upgrade) req.onupgradeneeded = function () { upgrade(req.result); };
-      req.onsuccess = function () { ok(req.result); };
+      req.onsuccess = function () {
+        var b = req.result;
+        b.onclose = function () { if (db === b) db = null; };
+        b.onversionchange = function () { b.close(); if (db === b) db = null; };
+        ok(b);
+      };
       req.onerror = function () { erro(req.error); };
+    });
+  }
+
+  function obterDb() {
+    if (db) {
+      try {
+        // Testa se a conexão ainda está viva
+        db.transaction(OBJ, "readonly");
+        return Promise.resolve(db);
+      } catch (e) {
+        db = null;
+      }
+    }
+    return abrir(DB_NOME, 1, function (b) { b.createObjectStore(OBJ); }).then(function (b) {
+      db = b;
+      return b;
     });
   }
 
@@ -54,18 +75,40 @@ var Store = (function () {
   }
 
   function gravar(chave, valor) {
-    if (!db) return Promise.resolve(false);
     pendentes++;
-    return new Promise(function (ok) {
-      var tx = db.transaction(OBJ, "readwrite");
-      if (valor === undefined) tx.objectStore(OBJ).delete(chave);
-      else tx.objectStore(OBJ).put(valor, chave);
-      tx.oncomplete = function () { pendentes--; ok(true); };
-      tx.onerror = tx.onabort = function () {
-        pendentes--; falhou = true;
-        console.error("Falha ao gravar", chave, tx.error);
-        ok(false);
-      };
+    return obterDb().then(function (banco) {
+      return new Promise(function (ok) {
+        function tentar(alvo, retry) {
+          try {
+            var tx = alvo.transaction(OBJ, "readwrite");
+            if (valor === undefined) tx.objectStore(OBJ).delete(chave);
+            else tx.objectStore(OBJ).put(valor, chave);
+            tx.oncomplete = function () { pendentes--; ok(true); };
+            tx.onerror = tx.onabort = function () {
+              pendentes--; falhou = true;
+              console.error("Falha ao gravar", chave, tx.error);
+              ok(false);
+            };
+          } catch (e) {
+            if (retry) {
+              db = null;
+              obterDb().then(function (banco2) { tentar(banco2, false); }).catch(function () {
+                pendentes--;
+                ok(false);
+              });
+            } else {
+              pendentes--;
+              console.error("Falha ao abrir transação", chave, e);
+              ok(false);
+            }
+          }
+        }
+        tentar(banco, true);
+      });
+    }).catch(function (e) {
+      console.warn("IndexedDB indisponível para gravação:", e);
+      pendentes--;
+      return false;
     });
   }
 
@@ -131,6 +174,8 @@ var Store = (function () {
     get: function (k) { return cache[k]; },
     set: function (k, v) { cache[k] = v; return gravar(k, v); },
     remove: function (k) { delete cache[k]; return gravar(k, undefined); },
+    del: function (k) { delete cache[k]; return gravar(k, undefined); },
+
     keys: function () { return Object.keys(cache); },
     disponivel: function () { return !!db; },
     teveFalha: function () { return falhou; },

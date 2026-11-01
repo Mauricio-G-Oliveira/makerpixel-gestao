@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+
 import { AuthCore, Modulos } from "../lib/legado.js";
 import { useAuth } from "../lib/auth.jsx";
 import { gravarLocal, lerJson, lerLocal, useTema } from "../lib/tema.js";
