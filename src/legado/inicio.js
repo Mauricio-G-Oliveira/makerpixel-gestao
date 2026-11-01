@@ -15,7 +15,7 @@
   if (typeof module === "object" && module.exports && typeof require === "function") {
     module.exports = factory(require("./modulos/em-dia/dados.js"), require("./modulos/iss-tubarao/dados.js"), require("./modulos/controle-horas/dados.js"));
   } else root.Inicio = factory(root.EmDiaDados, root.IssDados, root.HorasDados);
-})(typeof self !== "undefined" ? self : this, function (ED, ISS, HR) {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function (ED, ISS, HR) {
   "use strict";
 
   var CHAVES = { emDia: "emDia:v1", emDiaMes: "emDia:mes", iss: "iss:v1", issMes: "iss:mes", horas: "horas:v1", horasMes: "horas:mes", venc: "painelVencimentos:v1" };

@@ -44,16 +44,23 @@ self.addEventListener("fetch", function (ev) {
   if (req.method !== "GET") return;
   var url = new URL(req.url);
 
-  // páginas (o sistema e cada módulo, que abre num quadro): a versão guardada daquela página; sem ela, a rede.
+  // páginas (o sistema e cada módulo, que abre num quadro): busca na rede para sempre ter a versão mais recente; sem internet, usa o cache.
   if (req.mode === "navigate" && url.origin === location.origin) {
-    ev.respondWith(caches.match(req, { cacheName: CACHE, ignoreSearch: true }).then(function (r) {
-      if (r) return r;
-      return fetch(req).catch(function () {
-        var raiz = new URL("./", self.registration.scope).pathname;
-        if (url.pathname === raiz || url.pathname === raiz + "index.html") return caches.match("./", { cacheName: CACHE });
-        throw new Error("sem internet e página não guardada: " + url.pathname);
-      });
-    }));
+    ev.respondWith(
+      fetch(req).then(function (resp) {
+        if (resp && resp.ok) {
+          var copia = resp.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copia); });
+        }
+        return resp;
+      }).catch(function () {
+        return caches.match(req, { cacheName: CACHE, ignoreSearch: true }).then(function (r) {
+          if (r) return r;
+          var raiz = new URL("./", self.registration.scope).pathname;
+          return caches.match("./", { cacheName: CACHE });
+        });
+      })
+    );
     return;
   }
 

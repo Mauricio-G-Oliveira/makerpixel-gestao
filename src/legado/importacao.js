@@ -9,7 +9,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory(require("./core.js"), require("./integracao.js"));
   else root.Importacao = factory(root.Core, root.Integracao);
-})(typeof self !== "undefined" ? self : this, function (Core, I) {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function (Core, I) {
   "use strict";
 
   var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];

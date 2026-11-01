@@ -15,7 +15,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory();
   else root.AuthCore = factory();
-})(typeof self !== "undefined" ? self : this, function () {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function () {
   "use strict";
 
   var ADMIN_EMAIL = "mauriciogoulart.deoliveira37@gmail.com";

@@ -139,4 +139,6 @@ var Store = (function () {
 })();
 
 // No React este arquivo é carregado como módulo: publica o Store para os outros arquivos de regras.
-if (typeof self !== "undefined") self.Store = Store;
+var _g = typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis;
+if (_g) _g.Store = Store;
+

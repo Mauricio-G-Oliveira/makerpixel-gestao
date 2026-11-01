@@ -11,7 +11,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory(require("./regras.js"));
   else root.HorasDados = factory(root.HorasRegras);
-})(typeof self !== "undefined" ? self : this, function (R) {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function (R) {
   "use strict";
 
   var seq = 0;

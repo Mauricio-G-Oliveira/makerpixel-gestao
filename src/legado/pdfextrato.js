@@ -22,7 +22,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory();
   else root.PdfExtrato = factory();
-})(typeof self !== "undefined" ? self : this, function () {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function () {
   "use strict";
 
   var MESES = { jan: 1, fev: 2, mar: 3, abr: 4, mai: 5, jun: 6, jul: 7, ago: 8, set: 9, out: 10, nov: 11, dez: 12 };

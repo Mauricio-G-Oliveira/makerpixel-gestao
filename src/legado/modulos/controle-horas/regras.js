@@ -10,7 +10,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory();
   else root.HorasRegras = factory();
-})(typeof self !== "undefined" ? self : this, function () {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function () {
   "use strict";
 
   var DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];

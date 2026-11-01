@@ -158,4 +158,4 @@
     contador: contador, dadosParaBackup: dadosParaBackup, restaurarDados: restaurarDados
   };
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = root.Modulos;
-})(typeof self !== "undefined" ? self : this);
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis);

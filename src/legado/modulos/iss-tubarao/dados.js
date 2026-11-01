@@ -9,7 +9,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports && typeof require === "function") module.exports = factory(require("./leitor.js"));
   else root.IssDados = factory(root.IssLeitor);
-})(typeof self !== "undefined" ? self : this, function (L) {
+})(typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : globalThis, function (L) {
   "use strict";
 
   function estadoVazio() { return { versao: 1, empresas: {}, meses: {} }; }
