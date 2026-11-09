@@ -4,6 +4,9 @@ import {
   CHAVE_AVULSA, PREFIXO_SALVA, avulsaVazia, calcular, gruposConferidos, grupoManual, juntarExtratos,
   listarSalvas, nomeSugerido, salvarAvulsa, trabalhoNaoSalvo
 } from "../../lib/conciliar.mjs";
+import { aplicarPerfilConciliacao } from "../../lib/regrasConciliacao.mjs";
+import { criarServicoConciliacao } from "../../lib/conciliacaoServidor.mjs";
+import { useAuth } from "../../lib/auth.jsx";
 import { baixarArquivos, lerArquivoExtrato, lerPlanilha } from "../../lib/leitores.js";
 import { useAvisos } from "../Avisos.jsx";
 import { BotaoArquivo, Campo, Mensagem, Segmentado, numero } from "../contabil/ui.jsx";
@@ -23,8 +26,10 @@ function carregar() {
   return e ? Object.assign(avulsaVazia(), e, { manuais: e.manuais || [] }) : avulsaVazia();
 }
 
-export default function ConciliacaoAvulsa() {
+export default function ConciliacaoAvulsa({ empresa, competencia, perfilCliente }) {
+  const { usuario } = useAuth();
   const { aviso, confirmar } = useAvisos();
+  const servicoServidor = useMemo(() => criarServicoConciliacao({ usuarioAtual: usuario }), [usuario]);
   const [av, setAvEstado] = useState(carregar);
   const [salvas, setSalvas] = useState(() => listarSalvas(Store));
   const [escolhida, setEscolhida] = useState("");
@@ -57,6 +62,56 @@ export default function ConciliacaoAvulsa() {
     : null), [av.extrato, titulos, av.manuais, av.tolerancia, filtro]);
 
   useEffect(() => { if (plan && plan.erro) setMsg({ texto: plan.erro, tipo: "erro" }); }, [plan]);
+
+  // Aplica tolerância do perfil do cliente
+  useEffect(() => {
+    if (perfilCliente && perfilCliente.toleranciaDias !== undefined) {
+      setAv((a) => (a.tolerancia !== perfilCliente.toleranciaDias ? Object.assign({}, a, { tolerancia: perfilCliente.toleranciaDias }) : a));
+    }
+  }, [perfilCliente]);
+
+  // Aplica regras automáticas do perfil (palavras-chave e lote)
+  useEffect(() => {
+    if (av.extrato && titulos && (!av.manuais || av.manuais.length === 0) && perfilCliente) {
+      const resPerfil = aplicarPerfilConciliacao(av.extrato, titulos, perfilCliente);
+      if (resPerfil.grupos.length > 0) {
+        setAv((a) => Object.assign({}, a, { manuais: resPerfil.grupos }));
+        aviso(`${resPerfil.grupos.length} regra(s) do perfil do cliente aplicadas automaticamente.`);
+      }
+    }
+  }, [av.extrato, titulos, perfilCliente]);
+
+  // Salva no servidor com detecção de conflito de versão (409)
+  useEffect(() => {
+    if (!empresa || !competencia || !r || (!av.extrato && !titulos)) return;
+    const timer = setTimeout(async () => {
+      try {
+        const payload = {
+          cnpj: empresa.documento,
+          banco: av.extratoNome || "Banco",
+          agencia: "",
+          conta: "1",
+          competencia,
+          extratoJson: JSON.stringify(av.extrato || []),
+          planilhaJson: JSON.stringify(titulos || []),
+          conferidosJson: JSON.stringify((av.manuais || []).filter((m) => m.tipo === "justificado")),
+          juncoesManuaisJson: JSON.stringify((av.manuais || []).filter((m) => m.tipo === "manual")),
+          observacoes: "",
+          resumoJson: JSON.stringify(r.resumo || {}),
+          versao: av.versao || 1
+        };
+        const salvo = await servicoServidor.salvar(payload);
+        if (salvo && salvo.versao) {
+          setAv((a) => Object.assign({}, a, { versao: salvo.versao }));
+        }
+      } catch (e) {
+        if (e.status === 409) {
+          aviso(e.message, { perigo: true });
+        }
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [empresa, competencia, r, av.manuais]);
 
   const lerExtratos = async (files) => {
     setMsg({ texto: "Lendo " + files.length + " arquivo(s)…", tipo: "info" });
