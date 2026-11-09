@@ -15,6 +15,7 @@ import { BotaoArquivo, Campo, Mensagem, Segmentado } from "../componentes/contab
 import { BarraSelecao, JanelaObs, Resumo, Tabela } from "../componentes/conciliacao/Resultado.jsx";
 import ConciliacaoAvulsa from "../componentes/conciliacao/Avulsa.jsx";
 import ModalPerfilConciliacao from "../componentes/conciliacao/ModalPerfilConciliacao.jsx";
+import ModalImportadorModelos from "../componentes/contabil/ModalImportadorModelos.jsx";
 
 /*
  * Conciliação bancária:
@@ -42,6 +43,7 @@ export default function Conciliacao() {
   const [competencia, setCompetencia] = useState(() => memoria.competencia || mesPadrao());
   const [empresaId, setEmpresaId] = useState(memoria.empresaId);
   const [modalPerfilAberta, setModalPerfilAberta] = useState(false);
+  const [modalModelosAberta, setModalModelosAberta] = useState(false);
   const [perfilEmpresa, setPerfilEmpresa] = useState(null);
   const [conciliacoesMes, setConciliacoesMes] = useState([]);
   const [carregandoMes, setCarregandoMes] = useState(false);
@@ -133,13 +135,20 @@ export default function Conciliacao() {
           </div>
 
           {empresaSelecionada && (
-            <div className="pt-5">
+            <div className="pt-5 flex items-center gap-2">
               <button
                 type="button"
                 className="btn-contorno btn-sm h-9"
                 onClick={() => setModalPerfilAberta(true)}
               >
                 ⚙ Regras deste cliente
+              </button>
+              <button
+                type="button"
+                className="btn-contorno btn-sm h-9"
+                onClick={() => setModalModelosAberta(true)}
+              >
+                📄 Importar planilha (modelo)
               </button>
             </div>
           )}
@@ -277,6 +286,16 @@ export default function Conciliacao() {
         perfilAtual={perfilEmpresa}
         aoSalvar={salvarPerfil}
         aoFechar={() => setModalPerfilAberta(false)}
+      />
+
+      {/* Modal de importador com modelos de planilha por cliente */}
+      <ModalImportadorModelos
+        aberta={modalModelosAberta}
+        aoFechar={() => {
+          setModalModelosAberta(false);
+          carregarConciliacoes();
+        }}
+        empresa={empresaSelecionada}
       />
     </div>
   );
