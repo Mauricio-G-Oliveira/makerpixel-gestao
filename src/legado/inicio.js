@@ -448,31 +448,33 @@
       { tab: "encerramento", area: "contabil-lucros", icone: "encerramento", nome: "Encerramento do exercício", resumo: "Estoque, compras, CMV e lucro bruto do ano, por empresa.",
         itens: ["Matriz e filiais com o consolidado", "CMV, lucro bruto e resultado do período calculados", "Sócios com o que foi distribuído no ano"] },
       { tab: "lucros", area: "contabil-lucros", icone: "lucros", nome: "Distribuição de lucros e REINF", resumo: "O que cada sócio recebeu, o IRRF e a REINF do mês.",
-        itens: ["Calcula base e IRRF de 10% e avisa quando o mês passa de R$ 50 mil", "Saldo de lucros aprovados em ata, sem IRRF", "REINF por competência: notas, distribuído e confirmação"] }
+        itens: ["Calcula base e IRRF de 10% e avisa quando o mês passa de R$ 50 mil", "Saldo de lucros aprovados em ata, sem IRRF", "REINF por competência: notas, distribuído e confirmação"] },
+      { tab: "contabil-faturamentos", area: "contabil-lucros", icone: "faturamento", nome: "Faturamentos", resumo: "O faturamento de cada empresa, mês a mês.",
+        itens: ["Digita direto na tabela, como numa planilha", "Total do ano e dos últimos 12 meses", "Total do escritório por mês"] },
+      { tab: "contabil-demonstrativos", area: "contabil-lucros", icone: "demonstrativo", nome: "Demonstrativos contábeis", resumo: "Balanço, DRE e balancete de cada empresa por exercício.",
+        itens: ["Situação: pendente, emitido ou entregue", "Progresso do exercício de todas as empresas", "Marca o que não se aplica à empresa"] }
     ] },
     { id: "fiscal", nome: "Fiscal", texto: "Prévia da apuração e conferência das notas antes do fechamento.", ferramentas: [
       { tab: "mod-icms", area: "mod-icms", icone: "icms", nome: "Apuração de ICMS", resumo: "Acompanha o ICMS do cliente durante o mês.",
         itens: ["Lê os XMLs de NF-e e NFC-e de entrada e saída", "Débitos, créditos e saldo por CFOP até a data escolhida", "Planilha Excel pronta para conferência"] },
       { tab: "mod-ibs-cbs", area: "mod-ibs-cbs", icone: "ibs", nome: "Auditor IBS/CBS", resumo: "Confere os novos tributos da reforma nas notas.",
         itens: ["CST, cClassTrib, base e alíquotas da LC 214/2025", "Aponta reduções e valores divergentes item a item", "NF-e e NFS-e, calculadora manual e exportação"] },
-      { tab: "mod-iss", area: "mod-iss", icone: "iss", nome: "ISS Tubarão", resumo: "Conferência do Meu ISS sem precisar de robô.",
+      { tab: "mod-iss", area: "mod-iss", icone: "iss", nome: "ISS", resumo: "Conferência das retenções e notas fiscais.",
         itens: ["Importa o XML do Movimento Econômico de cada empresa", "ISS retido e retenções federais (IR, PIS, COFINS, CSLL, INSS)", "Alertas de alíquota e valores, e Excel por empresa"] }
     ] },
     { id: "pessoal", nome: "Departamento Pessoal", texto: "Folha de ponto dos clientes sem cartão, conferida e calculada.", ferramentas: [
       { tab: "mod-horas", area: "mod-horas", icone: "horas", nome: "Controle de horas", resumo: "Folhas de presença dos clientes que anotam o ponto à mão.",
         itens: ["Gera a planilha para o cliente preencher (uma aba por funcionário)", "Importa e calcula extras, noturno, atrasos e faltas", "Alertas de intervalo e interjornada, e fechamento do mês"] }
     ] },
-    { id: "cadastro", nome: "Departamento Cadastro", texto: "O cadastro das empresas, com documentos, faturamento e demonstrativos.", ferramentas: [
+    { id: "cadastro", nome: "Departamento Cadastro", texto: "O cadastro das empresas, certidões, certificados e alvarás.", ferramentas: [
       { tab: "dep-empresas", area: "mod-vencimentos", icone: "empresa", nome: "Empresas", resumo: "O cadastro geral, usado por todo o sistema.",
         itens: ["CNPJ, código e regime de cada empresa", "Matriz e filial reconhecidas pelo CNPJ", "Responsável de cada setor num lugar só"] },
-      { tab: "dep-certidoes", area: "mod-vencimentos", icone: "certidao", nome: "Certidões", resumo: "CNDs, CRF FGTS, certificado digital, procurações e licenças, com vencimento.",
-        itens: ["O que venceu e o que vence em 7 e 30 dias", "Renovação com histórico do vencimento anterior", "Busca por empresa, tipo e responsável"] },
+      { tab: "dep-certidoes", area: "mod-vencimentos", icone: "certidao", nome: "Certidões", resumo: "CNDs, CRF FGTS, procurações e certidões com vencimento.",
+        itens: ["O que venceu e o que vence em 7 dias", "Renovação com histórico do vencimento anterior", "Busca por empresa, tipo e responsável"] },
+      { tab: "dep-certificados", area: "mod-vencimentos", icone: "cadeado", nome: "Certificados digitais", resumo: "Certificados digitais A1 e A3, vencimento e renovação.",
+        itens: ["Modelos A1 (arquivo) e A3 (cartão/token)", "Alerta com 30 dias de antecedência para agendamento", "Exporta para planilha e envia mensagem ao cliente"] },
       { tab: "dep-alvaras", area: "mod-vencimentos", icone: "alvara", nome: "Alvarás", resumo: "Alvarás de funcionamento, sanitário, Bombeiros e ambiental.",
-        itens: ["Vencimento de cada alvará por empresa", "Renovação com histórico", "Link para o arquivo do documento"] },
-      { tab: "dep-faturamentos", area: "mod-vencimentos", icone: "faturamento", nome: "Faturamentos", resumo: "O faturamento de cada empresa, mês a mês.",
-        itens: ["Digita direto na tabela, como numa planilha", "Total do ano e dos últimos 12 meses", "Total do escritório por mês"] },
-      { tab: "dep-demonstrativos", area: "mod-vencimentos", icone: "demonstrativo", nome: "Demonstrativos contábeis", resumo: "Balanço, DRE e balancete de cada empresa por exercício.",
-        itens: ["Situação: pendente, emitido ou entregue", "Progresso do exercício de todas as empresas", "Marca o que não se aplica à empresa"] }
+        itens: ["Vencimento de cada alvará por empresa", "Renovação com histórico", "Link para o arquivo do documento"] }
     ] },
     { id: "escritorio", nome: "Escritório", texto: "O andamento da equipe e o fechamento de cada cliente.", ferramentas: [
       { tab: "mod-em-dia", area: "mod-em-dia", icone: "emdia", nome: "Em Dia", resumo: "O que cada um faz no mês, numa grade simples.",

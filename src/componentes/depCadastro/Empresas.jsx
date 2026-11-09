@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { REGIMES, TIPOS_LUCRO_REAL, ativaNoMes, planilhaEmpresas } from "../../lib/depCadastro.mjs";
+import { Link, useSearchParams } from "react-router-dom";
+import { REGIMES, TIPOS_LUCRO_REAL, ativaNoMes, planilhaEmpresas, ordenarPelaBusca } from "../../lib/depCadastro.mjs";
 import { consultarCnpjReceita, preencherCamposVazios } from "../../lib/consultaCnpj.mjs";
 import { carregarXlsx } from "../../lib/leitores.js";
 import { useDepCadastro } from "../../lib/useDepCadastro.js";
@@ -10,6 +10,7 @@ import Janela from "../Janela.jsx";
 import Icone from "../Icone.jsx";
 import { Campo, Selo, TextoRapido, numero } from "../contabil/ui.jsx";
 import { carregarDemo } from "./Importar.jsx";
+import { Ficha } from "../../paginas/DepCadastro.jsx";
 
 /*
  * Cadastro geral de empresas: o mesmo cadastro que Certidões, Faturamentos, Demonstrativos e o Em Dia
@@ -174,7 +175,10 @@ export default function Empresas() {
   const [svc, versao] = useDepCadastro();
   const [emDia, versaoEmDia] = useEmDia();
   const { aviso, confirmar } = useAvisos();
-  const [busca, setBusca] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const busca = searchParams.get("q") || "";
+  const empresaId = searchParams.get("empresa");
+
   const [regime, setRegime] = useState("");
   const [matrizes, setMatrizes] = useState(false);
   const [saidas, setSaidas] = useState(false);
@@ -188,13 +192,33 @@ export default function Empresas() {
   const nomes = {};
   lista.forEach((c) => { nomes[c.id] = c.nome; });
   const ativas = lista.filter((c) => ativaNoMes(c, mesAtual) || (c.inicio && c.inicio > mesAtual));
-  const visiveis = lista.filter((c) => {
+
+  const candidatos = lista.filter((c) => {
     if (!saidas && ((c.saida && c.saida < mesAtual) || (c.baixa && c.baixa.slice(0, 7) < mesAtual))) return false;
     if (regime && (c.regime || "(sem)") !== regime) return false;
     if (matrizes && c.filial) return false;
-    const b = busca.trim().toLowerCase(), dig = busca.replace(/\D/g, "");
-    return !b || String(c.nome).toLowerCase().indexOf(b) > -1 || String(c.codigo || "").toLowerCase() === b || (dig.length >= 3 && String(c.documento || "").replace(/\D/g, "").indexOf(dig) > -1);
+    return true;
   });
+
+  const visiveis = busca.trim()
+    ? ordenarPelaBusca(candidatos, busca)
+    : candidatos.slice().sort((a, b) => String(a.nome).localeCompare(String(b.nome), "pt-BR"));
+
+  if (empresaId) {
+    return (
+      <Ficha
+        id={empresaId}
+        aoVoltar={() => {
+          setSearchParams((p) => {
+            const n = new URLSearchParams(p);
+            n.delete("empresa");
+            return n;
+          });
+        }}
+      />
+    );
+  }
+
   const saiu = lista.length - ativas.length;
   const semRegime = ativas.filter((c) => !c.regime).length;
   const filiais = ativas.filter((c) => c.filial).length;
@@ -203,7 +227,7 @@ export default function Empresas() {
     if (!(await confirmar({ titulo: "Excluir " + c.nome + "?", perigo: true, botao: "Excluir", texto: "Os faturamentos e demonstrativos dela também saem. Se ela só deixou de ser cliente, prefira marcar o mês em que saiu: o histórico fica." }))) return;
     try { svc.excluirEmpresa(c.id); aviso("Empresa excluída."); } catch (e) { aviso(e.message); }
   };
-  /** Exporta o que está na lista (com os filtros) no formato do Acessórias + colunas da Central: dá para editar e importar de volta. */
+  /** Exporta o que está na lista (com os filtros) no formato do sistema de obrigações + colunas da Central: dá para editar e importar de volta. */
   const exportar = async () => {
     try {
       const XLSX = await carregarXlsx();
@@ -225,7 +249,30 @@ export default function Empresas() {
         {saiu > 0 && <span className="text-muted">{saiu} já saíram</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome, código ou CNPJ…" aria-label="Buscar empresa" className="max-w-[260px] h-9" />
+        <input
+          type="search"
+          data-foco
+          autoFocus
+          value={busca}
+          onChange={(e) => setSearchParams((p) => {
+            const n = new URLSearchParams(p);
+            if (e.target.value) n.set("q", e.target.value);
+            else n.delete("q");
+            return n;
+          }, { replace: true })}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && visiveis.length > 0) {
+              setSearchParams((p) => {
+                const n = new URLSearchParams(p);
+                n.set("empresa", visiveis[0].id);
+                return n;
+              });
+            }
+          }}
+          placeholder="Buscar nome, código ou CNPJ…"
+          aria-label="Buscar empresa"
+          className="max-w-[260px] h-9"
+        />
         <select value={regime} onChange={(e) => setRegime(e.target.value)} aria-label="Regime" className="h-9 w-auto">
           <option value="">Todos os regimes</option>{REGIMES.map((x) => <option key={x} value={x}>{x}</option>)}<option value="(sem)">Sem regime</option>
         </select>
@@ -269,7 +316,17 @@ export default function Empresas() {
                     <tr key={c.id} className={"hover:bg-surface-2 " + (saiuJa ? "opacity-60" : "")}>
                       <td className="px-3 py-1.5 tabular-nums text-muted">{c.codigo}</td>
                       <td className="px-3 py-1.5">
-                        <Link to={"/departamento-cadastro/buscar?empresa=" + c.id} className="block font-medium hover:text-brand hover:underline">{c.nome}</Link>
+                        <button
+                          type="button"
+                          onClick={() => setSearchParams((p) => {
+                            const n = new URLSearchParams(p);
+                            n.set("empresa", c.id);
+                            return n;
+                          })}
+                          className="block text-left font-medium hover:text-brand hover:underline"
+                        >
+                          {c.nome}
+                        </button>
                         <span className="text-[12px] text-muted tabular-nums">{c.documento || "sem CNPJ/CPF"}</span>
                         {c.baixa && <span className="ml-1.5 align-middle"><Selo tipo="erro">Baixada em {c.baixa.split("-").reverse().join("/")}</Selo></span>}
                         {c.filial && <span className="ml-1.5 align-middle"><Selo tipo="neutro" title="Pelo CNPJ (não é 0001)">{c.matrizId ? "Filial de " + nomes[c.matrizId] : "Filial"}</Selo></span>}

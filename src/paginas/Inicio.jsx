@@ -64,8 +64,8 @@ function useResumo(usuario, pode) {
             sub: rf.pendentes ? rf.pendentes + " a confirmar até " + rf.prazo.slice(8) + "/" + rf.prazo.slice(5, 7) : "Todas confirmadas", tom: rf.pendentes && rf.prazo < ctx.hoje ? "perigo" : rf.pendentes ? "alerta" : "", ir: { tab: "reinf" } });
         }
       }
-      // Alerta de Limites MEI e Simples Nacional
-      if (pode("mod-vencimentos") && svcCad) {
+      // Alerta de Limites MEI e Simples Nacional (pertence ao Contábil)
+      if (pode("contabil-lucros") && svcCad) {
         try {
           const anoAtual = new Date().getFullYear();
           const mesAtual = new Date().getMonth() + 1;
@@ -81,7 +81,7 @@ function useResumo(usuario, pode) {
               valor: String(atencaoCount),
               sub: atencaoCount === 1 ? "empresa requer atenção" : "empresas requerem atenção",
               tom: "alerta",
-              ir: { rota: "/departamento-cadastro/faturamentos" }
+              ir: { rota: "/contabil/faturamentos" }
             });
           }
         } catch (eLim) {
@@ -159,7 +159,9 @@ export default function Inicio() {
     if (alvo.tab === "fechamento") { navegar("/fechamento"); return; }
     if (alvo.tab === "encerramento") { navegar("/encerramento"); return; }
     if (alvo.tab === "reinf") { navegar("/reinf"); return; }
-    const dep = { "dep-empresas": "empresas", "mod-vencimentos": "certidoes", "dep-certidoes": "certidoes", "dep-certificados": "certificados", "dep-alvaras": "alvaras", "dep-faturamentos": "faturamentos", "dep-demonstrativos": "demonstrativos" }[alvo.tab];
+    if (alvo.tab === "contabil-faturamentos" || alvo.tab === "dep-faturamentos") { navegar("/contabil/faturamentos"); return; }
+    if (alvo.tab === "contabil-demonstrativos" || alvo.tab === "dep-demonstrativos") { navegar("/contabil/demonstrativos"); return; }
+    const dep = { "dep-empresas": "empresas", "mod-vencimentos": "certidoes", "dep-certidoes": "certidoes", "dep-certificados": "certificados", "dep-alvaras": "alvaras" }[alvo.tab];
     if (dep) { navegar("/departamento-cadastro/" + dep); return; }
     navegar(alvo.tab === "master" ? "/integracao" : alvo.tab === "conciliacao" ? "/conciliacao" : "/modulo/" + alvo.tab, { state: { prefs: alvo.prefs || null } });
   };

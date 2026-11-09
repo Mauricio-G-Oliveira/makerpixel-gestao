@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Core } from "../lib/legado.js";
-import { ALVARAS_GRADE, CERTIFICADO, DEMONSTRATIVOS, MESES, MODELOS_CERTIFICADO, NOME_CURTO_ALVARA, SITUACOES_ALVARA, STATUS_DEMO, TIPOS_ALVARAS, TIPOS_CERTIDOES, ehCertificado, grupoDoTipo, lerCertidao, linhasCertificados, nomeDoTipo, textoSituacao } from "../lib/depCadastro.mjs";
+import { ALVARAS_GRADE, CERTIFICADO, DEMONSTRATIVOS, MESES, MODELOS_CERTIFICADO, NOME_CURTO_ALVARA, SITUACOES_ALVARA, STATUS_DEMO, TIPOS_ALVARAS, TIPOS_CERTIDOES, ehCertificado, grupoDoTipo, lerCertidao, linhasCertificados, nomeDoTipo, textoSituacao, quemVeFaturamentos } from "../lib/depCadastro.mjs";
 import { carregarXlsx } from "../lib/leitores.js";
 import { abrirArquivo, apagarArquivo, guardarArquivo } from "../lib/arquivos.js";
 import { textoDoPdf } from "../lib/leitores.js";
 import Importar, { carregarDemo } from "../componentes/depCadastro/Importar.jsx";
 import Empresas, { FormEmpresa } from "../componentes/depCadastro/Empresas.jsx";
 import Mensagem from "../componentes/depCadastro/Mensagem.jsx";
+import ModalLerPdfs from "../componentes/depCadastro/ModalLerPdfs.jsx";
 import { useDepCadastro } from "../lib/useDepCadastro.js";
 import { useEmDia } from "../lib/useEmDia.js";
+import { useAuth } from "../lib/auth.jsx";
 import { useAvisos } from "../componentes/Avisos.jsx";
 import Janela from "../componentes/Janela.jsx";
 import Icone from "../componentes/Icone.jsx";
@@ -22,8 +24,8 @@ import { avaliarLimites, avaliarTodasEmpresas } from "../lib/limitesFaturamento.
  */
 const SELO_SIT = { vencido: "erro", "7": "pendente", "30": "novo", ok: "ok", sem: "neutro", na: "neutro", andamento: "pendente" };
 
-/** Tela vazia: explica e oferece a demonstração e a importação. */
-function Vazio({ titulo, texto }) {
+/** Tela vazia: explica e oferece a demonstração, leitura de PDFs ou importação. */
+function Vazio({ titulo, texto, aoLerPdfs }) {
   const [svc] = useDepCadastro();
   const { aviso } = useAvisos();
   return (
@@ -31,8 +33,12 @@ function Vazio({ titulo, texto }) {
       <strong className="block text-[15px]">{titulo}</strong>
       <span className="block text-muted text-[13.5px]">{texto}</span>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
+        {aoLerPdfs ? (
+          <button type="button" className="btn-primario btn-sm" onClick={aoLerPdfs}>Ler PDFs</button>
+        ) : (
+          <Link to="/departamento-cadastro/importar" className="btn-contorno btn-sm">Importar PDF ou planilha</Link>
+        )}
         <button type="button" className="btn-contorno btn-sm" onClick={() => aviso(carregarDemo(svc) ? "Demonstração carregada." : "Já há dados: a demonstração só entra onde está vazio.")}>Carregar demonstração</button>
-        <Link to="/departamento-cadastro/importar" className="btn-contorno btn-sm">Importar PDF ou planilha</Link>
       </div>
     </div>
   );
@@ -63,7 +69,12 @@ function FormDocumento({ grupo, editando, aoFechar, tipoInicial, inicial }) {
     try {
       const d = svc.salvarDocumento(f, editando && editando.id);
       if (pdf) { await guardarArquivo(d.id, pdf); svc.marcarAnexo(d.id, { nome: pdf.name, tamanho: pdf.size }); }
-      aviso(editando ? "Documento atualizado." : "Documento cadastrado."); aoFechar();
+      if (grupo === "certidoes" && ehCertificado(f.tipo)) {
+        aviso("Está na aba Certificados digitais.");
+      } else {
+        aviso(editando ? "Documento atualizado." : "Documento cadastrado.");
+      }
+      aoFechar();
     } catch (e) { setErro(e.message); }
   };
   const empresas = svc.empresas();
@@ -148,6 +159,7 @@ function Documentos({ grupo }) {
   const [form, setForm] = useState(null);   // { editando }
   const [renovando, setRenovando] = useState(null);
   const [mensagem, setMensagem] = useState(null);
+  const [modalPdfs, setModalPdfs] = useState(false);
   useEffect(() => { setFiltro("atencao"); setBusca(""); }, [grupo]);
   const nome = grupo === "alvaras" ? "alvará" : "certidão";
   const visiveis = lista.filter((d) => {
@@ -177,11 +189,12 @@ function Documentos({ grupo }) {
           opcoes={[["atencao", "Pedem atenção"], ["vencido", "Vencidos"], ["todos", "Todos (" + numero(r.total) + ")"]]} />
         <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar empresa, tipo, número…" aria-label="Buscar" className="max-w-[300px] h-9" />
         <div className="flex-1" />
+        <button type="button" className="btn-contorno btn-sm" onClick={() => setModalPdfs(true)}>Ler PDFs</button>
         <Link to="/departamento-cadastro/empresas" className="btn-contorno btn-sm">Empresas</Link>
         <button type="button" className="btn-primario btn-sm" onClick={() => setForm({ editando: null })}><Icone nome="mais" />Nova {nome}</button>
       </div>
       <div className="cartao overflow-hidden">
-        {!lista.length ? <Vazio titulo={"Nenhuma " + nome + " cadastrada"} texto={"Cadastre em Nova " + nome + ", importe os PDFs ou uma planilha, ou carregue a demonstração para ver como fica."} />
+        {!lista.length ? <Vazio titulo={"Nenhuma " + nome + " cadastrada"} texto={"Cadastre em Nova " + nome + ", use Ler PDFs para ler vários documentos de uma vez, ou carregue a demonstração para ver como fica."} aoLerPdfs={() => setModalPdfs(true)} />
         : !visiveis.length ? (
           <div className="p-10 text-center"><strong className="block text-[15px]">{filtro === "atencao" ? "Nada vencendo nos próximos 30 dias" : "Nada com esse filtro"}</strong>
             <span className="text-muted text-[13.5px]">Escolha Todos para ver a lista inteira.</span></div>
@@ -217,6 +230,7 @@ function Documentos({ grupo }) {
       {form && <FormDocumento grupo={grupo} editando={form.editando} aoFechar={() => setForm(null)} />}
       {renovando && <Renovar doc={renovando} aoFechar={() => setRenovando(null)} />}
       {mensagem && <Mensagem doc={mensagem} aoFechar={() => setMensagem(null)} />}
+      {modalPdfs && <ModalLerPdfs aberta={modalPdfs} aoFechar={() => setModalPdfs(false)} />}
     </div>
   );
 }
@@ -252,6 +266,7 @@ function Alvaras() {
   const [form, setForm] = useState(null);   // { editando, inicial }
   const [renovando, setRenovando] = useState(null);
   const [mensagem, setMensagem] = useState(null);
+  const [modalPdfs, setModalPdfs] = useState(false);
   useEffect(() => { setLimite(POR_PAGINA); }, [filtro, busca, resp, cidade]);
   const responsaveis = useMemo(() => [...new Set(g.linhas.map((l) => l.responsavel).filter(Boolean))].sort(), [g]);
   const cidades = useMemo(() => [...new Set(g.linhas.map((l) => l.empresa.cidade).filter(Boolean))].sort(), [g]);
@@ -309,11 +324,12 @@ function Alvaras() {
         {responsaveis.length > 0 && <select value={resp} onChange={(e) => setResp(e.target.value)} aria-label="Responsável" className="h-9 max-w-[170px]"><option value="">Todos os responsáveis</option>{responsaveis.map((x) => <option key={x} value={x}>{x}</option>)}</select>}
         {cidades.length > 1 && <select value={cidade} onChange={(e) => setCidade(e.target.value)} aria-label="Cidade" className="h-9 max-w-[170px]"><option value="">Todas as cidades</option>{cidades.map((x) => <option key={x} value={x}>{x}</option>)}</select>}
         <div className="flex-1" />
+        <button type="button" className="btn-contorno btn-sm" onClick={() => setModalPdfs(true)}>Ler PDFs</button>
         <Segmentado pequeno rotulo="Ver como" valor={modo} aoMudar={setModo} opcoes={[["grade", "Grade"], ["lista", "Lista"]]} />
         <button type="button" className="btn-contorno btn-sm" onClick={baixar} disabled={!visiveis.length}>Baixar Excel</button>
       </div>
       <div className="cartao overflow-hidden">
-        {!g.linhas.length ? <Vazio titulo="Nenhuma empresa cadastrada" texto="Importe a planilha de renovação de alvarás (colunas Municipal, Sanitário e Bombeiro) ou a lista de empresas, ou carregue a demonstração." />
+        {!g.linhas.length ? <Vazio titulo="Nenhuma empresa cadastrada" texto="Use o Ler PDFs para importar alvarás em PDF ou cadastre em Empresas." aoLerPdfs={() => setModalPdfs(true)} />
         : !visiveis.length ? <div className="p-10 text-center"><strong className="block text-[15px]">Nada com esse filtro</strong><span className="text-muted text-[13.5px]">Escolha Todas para ver a lista inteira.</span></div>
         : (
           <div className="overflow-x-auto relative">
@@ -325,7 +341,7 @@ function Alvaras() {
               <tbody className="divide-y divide-line">
                 {visiveis.slice(0, limite).map((l) => (
                   <tr key={l.empresa.id} className="align-top hover:bg-surface-2/60">
-                    <td className="px-3 py-2"><Link to={"/departamento-cadastro/buscar?empresa=" + l.empresa.id} className="font-medium hover:text-brand hover:underline">{l.empresa.nome}</Link>
+                    <td className="px-3 py-2"><Link to={"/empresas?empresa=" + l.empresa.id} className="font-medium hover:text-brand hover:underline">{l.empresa.nome}</Link>
                       <span className="block text-[12px] text-muted tabular-nums">{[l.empresa.documento, [l.empresa.cidade, l.empresa.uf].filter(Boolean).join("/")].filter(Boolean).join(" · ")}</span></td>
                     {ALVARAS_GRADE.map((t) => <td key={t} className="px-1.5 py-1.5"><CelulaAlvara sit={l.situacoes[t]} doc={l.alvaras[t]} rotulo={NOME_CURTO_ALVARA[t] + " de " + l.empresa.nome} aoAbrir={() => abrir(l, t)} /></td>)}
                     <td className="px-3 py-2 whitespace-nowrap">{l.responsavel}</td>
@@ -344,6 +360,7 @@ function Alvaras() {
       {form && <FormDocumento grupo="alvaras" editando={form.editando} inicial={form.inicial} aoFechar={() => setForm(null)} />}
       {renovando && <Renovar doc={renovando} aoFechar={() => setRenovando(null)} />}
       {mensagem && <Mensagem doc={mensagem} aoFechar={() => setMensagem(null)} />}
+      {modalPdfs && <ModalLerPdfs aberta={modalPdfs} aoFechar={() => setModalPdfs(false)} />}
     </div>
   );
 }
@@ -361,15 +378,17 @@ const Linha = ({ rotulo, children }) => (children ? <div className="flex gap-3 t
 const mesCurto = (m) => MESES[Number(m.slice(5)) - 1] + "/" + m.slice(2, 4);
 const NOME_DEMO = Object.fromEntries(STATUS_DEMO.map((s) => [s.id, s.nome]));
 
-function Ficha({ id, aoVoltar }) {
+export function Ficha({ id, aoVoltar }) {
   const [svc, versao] = useDepCadastro();
   const [emDia] = useEmDia();
+  const { usuario } = useAuth();
+  const podeFaturamento = quemVeFaturamentos(usuario);
   const f = useMemo(() => svc.fichaEmpresa(id), [svc, id, versao]);   // eslint-disable-line
   const [editar, setEditar] = useState(false);
   const [form, setForm] = useState(null);
   const [renovando, setRenovando] = useState(null);
   const [mensagem, setMensagem] = useState(null);
-  if (!f) return <div className="cartao p-8 text-center"><strong>Empresa não encontrada.</strong> <button type="button" className="btn-fantasma btn-sm" onClick={aoVoltar}>Voltar à busca</button></div>;
+  if (!f) return <div className="cartao p-8 text-center"><strong>Empresa não encontrada.</strong> <button type="button" className="btn-fantasma btn-sm" onClick={aoVoltar}>← Empresas</button></div>;
   const c = f.empresa;
   const setores = emDia.setores();
   const maxFat = Math.max(1, ...f.faturamento.meses.map((x) => x.valor || 0));
@@ -377,6 +396,7 @@ function Ficha({ id, aoVoltar }) {
   const mesAtual = new Date().getMonth() + 1;
   const fatAno = (svc.faturamentos(String(anoAtual)) || {})[c.id] || {};
   const limiteEmpresa = useMemo(() => {
+    if (!podeFaturamento) return null;
     return avaliarLimites({
       empresa: c,
       ano: anoAtual,
@@ -384,7 +404,7 @@ function Ficha({ id, aoVoltar }) {
       anoAtual,
       mesAtual
     });
-  }, [c, fatAno, anoAtual, mesAtual]);
+  }, [c, fatAno, anoAtual, mesAtual, podeFaturamento]);
   const docLinha = (d) => (
     <li key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5">
       <span className="flex-1 min-w-[150px] text-[13.5px]">{nomeDoTipo(d)}{d.observacoes && <span className="block text-[12px] text-muted truncate" title={d.observacoes}>{d.observacoes}</span>}</span>
@@ -406,13 +426,13 @@ function Ficha({ id, aoVoltar }) {
             {c.baixa && <Selo tipo="erro">Baixada em {dataBR(c.baixa)}</Selo>}
             {c.situacaoCadastral && c.situacaoCadastral !== "ATIVA" && <Selo tipo="erro">Receita: {c.situacaoCadastral}</Selo>}
             {c.situacaoCadastral === "ATIVA" && <Selo tipo="ok">Receita: Ativa</Selo>}
-            {f.matriz && <Link to={"/departamento-cadastro/buscar?empresa=" + f.matriz.id}><Selo tipo="neutro">Filial de {f.matriz.nome} →</Selo></Link>}
+            {f.matriz && <Link to={"/empresas?empresa=" + f.matriz.id}><Selo tipo="neutro">Filial de {f.matriz.nome} →</Selo></Link>}
             {c.filial && !f.matriz && <Selo tipo="neutro">Filial (matriz não cadastrada)</Selo>}
             {f.filiais.length > 0 && <Selo tipo="novo">Matriz · {f.filiais.length} filial(is)</Selo>}
           </div>
         </div>
         <div className="flex gap-2">
-          <button type="button" className="btn-fantasma btn-sm" onClick={aoVoltar}>← Nova busca</button>
+          <button type="button" className="btn-fantasma btn-sm" onClick={aoVoltar}>← Empresas</button>
           <button type="button" className="btn-contorno btn-sm" onClick={() => setEditar(true)}>Editar empresa</button>
         </div>
       </div>
@@ -479,10 +499,10 @@ function Ficha({ id, aoVoltar }) {
           <Linha rotulo="Observações">{c.obs}</Linha>
           {c.contatos && c.contatos.length > 1 && <div className="mt-2 pt-2 border-t border-line text-[13px]"><span className="text-muted">Outros contatos: </span>
             {c.contatos.slice(1).map((x, i) => <span key={i}>{i ? " · " : ""}{[x.nome, x.telefone, x.email].filter(Boolean).join(", ")}</span>)}</div>}
-          {c.departamentos && c.departamentos.length > 0 && <div className="mt-2 flex flex-wrap gap-1 items-center text-[12px]"><span className="text-muted text-[13px] mr-1">Departamentos (Acessórias):</span>
+          {c.departamentos && c.departamentos.length > 0 && <div className="mt-2 flex flex-wrap gap-1 items-center text-[12px]"><span className="text-muted text-[13px] mr-1">Departamentos (sistema de obrigações):</span>
             {c.departamentos.map((d) => <span key={d} className="px-2 py-0.5 rounded-full bg-surface-2 border border-line">{d}</span>)}</div>}
           {!c.segmento && !c.fantasia && !c.contato && !c.telefone && !c.email && !c.obs && <p className="text-[13px] text-muted">Sem contato cadastrado. Em Editar empresa dá para incluir, e a mensagem de renovação sai com o nome e o WhatsApp.</p>}
-          {f.filiais.length > 0 && <div className="mt-2 text-[13px]"><span className="text-muted">Filiais: </span>{f.filiais.map((x, i) => <span key={x.id}>{i ? ", " : ""}<Link className="text-brand hover:underline" to={"/departamento-cadastro/buscar?empresa=" + x.id}>{x.documento || x.nome}{x.cidade ? " (" + x.cidade + ")" : ""}</Link></span>)}</div>}
+          {f.filiais.length > 0 && <div className="mt-2 text-[13px]"><span className="text-muted">Filiais: </span>{f.filiais.map((x, i) => <span key={x.id}>{i ? ", " : ""}<Link className="text-brand hover:underline" to={"/empresas?empresa=" + x.id}>{x.documento || x.nome}{x.cidade ? " (" + x.cidade + ")" : ""}</Link></span>)}</div>}
         </Bloco>
 
         <Bloco titulo="Responsáveis e sócios">
@@ -494,21 +514,23 @@ function Ficha({ id, aoVoltar }) {
           </div>
         </Bloco>
 
-        <Bloco titulo={"Faturamento: últimos 12 meses"} className="lg:col-span-2" acao={<Link to="/departamento-cadastro/faturamentos" className="btn-fantasma btn-sm">Abrir faturamentos</Link>}>
-          {!f.faturamento.comValor ? <p className="text-[13px] text-muted">Sem faturamento lançado nos últimos 12 meses.</p> : (<>
-            <div className="flex items-end gap-1.5 h-[120px]" role="img" aria-label={"Faturamento dos últimos 12 meses, total " + Core.formatBR(f.faturamento.total)}>
-              {f.faturamento.meses.map((x) => (
-                <div key={x.mes} className="flex-1 flex flex-col items-center justify-end h-full gap-1" title={mesCurto(x.mes) + ": " + (x.valor === null ? "sem lançamento" : "R$ " + Core.formatBR(x.valor))}>
-                  <div className={"w-full rounded-t " + (x.valor === null ? "bg-line h-[2px]" : "bg-brand-fill")} style={x.valor === null ? undefined : { height: Math.max(3, (x.valor / maxFat) * 96) + "px" }} />
-                  <span className="text-[10.5px] text-muted">{mesCurto(x.mes)}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[13px] mt-2">Total em 12 meses: <strong className="tabular-nums">R$ {Core.formatBR(f.faturamento.total)}</strong> <span className="text-muted">({f.faturamento.comValor} de 12 meses lançados)</span></p>
-          </>)}
-          <p className="text-[13px] mt-3 pt-3 border-t border-line"><span className="text-muted">Demonstrativos de {f.demonstrativos.exercicio}: </span>
-            {f.demonstrativos.itens.map((x, i) => <span key={x.tipo}>{i ? " · " : ""}{x.tipo}: <strong className={x.status === "entregue" ? "text-credit" : x.status ? "" : "text-warn"}>{NOME_DEMO[x.status] || "pendente"}</strong></span>)}</p>
-        </Bloco>
+        {podeFaturamento && (
+          <Bloco titulo={"Faturamento: últimos 12 meses"} className="lg:col-span-2" acao={<Link to="/contabil/faturamentos" className="btn-fantasma btn-sm">Abrir faturamentos</Link>}>
+            {!f.faturamento.comValor ? <p className="text-[13px] text-muted">Sem faturamento lançado nos últimos 12 meses.</p> : (<>
+              <div className="flex items-end gap-1.5 h-[120px]" role="img" aria-label={"Faturamento dos últimos 12 meses, total " + Core.formatBR(f.faturamento.total)}>
+                {f.faturamento.meses.map((x) => (
+                  <div key={x.mes} className="flex-1 flex flex-col items-center justify-end h-full gap-1" title={mesCurto(x.mes) + ": " + (x.valor === null ? "sem lançamento" : "R$ " + Core.formatBR(x.valor))}>
+                    <div className={"w-full rounded-t " + (x.valor === null ? "bg-line h-[2px]" : "bg-brand-fill")} style={x.valor === null ? undefined : { height: Math.max(3, (x.valor / maxFat) * 96) + "px" }} />
+                    <span className="text-[10.5px] text-muted">{mesCurto(x.mes)}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[13px] mt-2">Total em 12 meses: <strong className="tabular-nums">R$ {Core.formatBR(f.faturamento.total)}</strong> <span className="text-muted">({f.faturamento.comValor} de 12 meses lançados)</span></p>
+            </>)}
+            <p className="text-[13px] mt-3 pt-3 border-t border-line"><span className="text-muted">Demonstrativos de {f.demonstrativos.exercicio}: </span>
+              {f.demonstrativos.itens.map((x, i) => <span key={x.tipo}>{i ? " · " : ""}{x.tipo}: <strong className={x.status === "entregue" ? "text-credit" : x.status ? "" : "text-warn"}>{NOME_DEMO[x.status] || "pendente"}</strong></span>)}</p>
+          </Bloco>
+        )}
       </div>
       {editar && <FormEmpresa editando={c} aoFechar={() => setEditar(false)} />}
       {form && <FormDocumento grupo={form.grupo} editando={form.editando} inicial={form.inicial} aoFechar={() => setForm(null)} />}
@@ -741,7 +763,7 @@ function QuadroLimites({ ano }) {
   );
 }
 
-function Faturamentos() {
+export function Faturamentos() {
   const [svc, versao] = useDepCadastro();
   const atual = new Date().getFullYear();
   const [ano, setAno] = useState(String(atual));
@@ -797,7 +819,7 @@ function Faturamentos() {
 
 // ---------------------------------------------------------------- demonstrativos
 const COR_DEMO = { "": "border-warn/40 bg-warn-soft text-warn", emitido: "border-info/40 bg-info-soft text-info", entregue: "border-credit/40 bg-ok-soft text-credit", nao_se_aplica: "border-line bg-surface-2 text-muted" };
-function Demonstrativos() {
+export function Demonstrativos() {
   const [svc, versao] = useDepCadastro();
   const atual = new Date().getFullYear();
   const [ano, setAno] = useState(String(atual - 1));
@@ -846,15 +868,16 @@ function Demonstrativos() {
   );
 }
 
-export default function DepCadastro() {
-  const { secao } = useParams();
+export default function DepCadastro({ secao: secaoProp }) {
+  const params = useParams();
+  const secao = secaoProp || params.secao;
   if (secao === "empresas") return <Empresas />;
-  if (secao === "buscar") return <Buscar />;
+  if (secao === "buscar") return <Navigate to="/empresas" replace />;
   if (secao === "certidoes") return <Documentos grupo="certidoes" />;
   if (secao === "certificados") return <Certificados />;
   if (secao === "alvaras") return <Alvaras />;
-  if (secao === "faturamentos") return <Faturamentos />;
-  if (secao === "demonstrativos") return <Demonstrativos />;
+  if (secao === "faturamentos") return <Navigate to="/contabil/faturamentos" replace />;
+  if (secao === "demonstrativos") return <Navigate to="/contabil/demonstrativos" replace />;
   if (secao === "importar") return <Importar />;
   return <Navigate to="/departamento-cadastro/certidoes" replace />;
 }

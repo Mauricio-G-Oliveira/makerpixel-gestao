@@ -28,13 +28,13 @@
 
   /** Áreas do sistema que um usuário pode acessar (o admin acessa todas). */
   var AREAS = [
-    { id: "integracao", nome: "Integração contábil", detalhe: "Bancos, unidades, movimentos, cadastros e TXTs do Único" },
+    { id: "integracao", nome: "Integração contábil", detalhe: "Bancos, unidades, movimentos, cadastros e TXTs do sistema contábil" },
     { id: "conciliacao", nome: "Conciliação", detalhe: "Extrato × sistema e extrato × planilha" },
-    { id: "contabil-lucros", nome: "Contábil: fechamento, encerramento, lucros e REINF", detalhe: "Fechamento do mês, encerramento do exercício, sócios, IRRF, saldo de ata e REINF" },
+    { id: "contabil-lucros", nome: "Contábil: fechamento, encerramento, lucros, REINF, faturamentos e demonstrativos", detalhe: "Fechamento do mês, encerramento do exercício, sócios, IRRF, saldo de ata, REINF, faturamentos e demonstrativos" },
     { id: "mod-icms", nome: "Apuração de ICMS", detalhe: "" },
     { id: "mod-ibs-cbs", nome: "Auditor IBS/CBS", detalhe: "" },
-    { id: "mod-iss", nome: "ISS Tubarão", detalhe: "Meu ISS: ISS retido e retenções federais por XML" },
-    { id: "mod-vencimentos", nome: "Departamento Cadastro", detalhe: "Certidões, alvarás, faturamentos e demonstrativos" },
+    { id: "mod-iss", nome: "ISS", detalhe: "ISS retido e retenções federais por XML" },
+    { id: "mod-vencimentos", nome: "Departamento Cadastro", detalhe: "Empresas, certidões, certificados e alvarás" },
     { id: "mod-em-dia", nome: "Em Dia", detalhe: "Fechamento do mês e diário dos setores" },
     { id: "mod-horas", nome: "Controle de horas", detalhe: "Folhas de presença dos funcionários dos clientes (DP)" }
   ];

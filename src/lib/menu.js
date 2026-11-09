@@ -35,7 +35,16 @@ export function montarMenu(pode, ehAdmin) {
     });
   }
   if (pode("conciliacao")) contabil.push({ id: "conciliacao", label: "Conciliação", para: "/conciliacao", icone: "conciliacao" });
-  if (pode("contabil-lucros")) contabil.push({ id: "fechamento", label: "Fechamento contábil", para: "/fechamento", icone: "fechamento" }, { id: "encerramento", label: "Encerramento do exercício", para: "/encerramento", icone: "encerramento" }, { id: "lucros", label: "Distribuição de lucros", para: "/lucros", icone: "lucros" }, { id: "reinf", label: "REINF", para: "/reinf", icone: "reinf" });
+  if (pode("contabil-lucros")) {
+    contabil.push(
+      { id: "fechamento", label: "Fechamento contábil", para: "/fechamento", icone: "fechamento" },
+      { id: "encerramento", label: "Encerramento do exercício", para: "/encerramento", icone: "encerramento" },
+      { id: "lucros", label: "Distribuição de lucros", para: "/lucros", icone: "lucros" },
+      { id: "reinf", label: "REINF", para: "/reinf", icone: "reinf" },
+      { id: "contabil-faturamentos", label: "Faturamentos", para: "/contabil/faturamentos", icone: "faturamento" },
+      { id: "contabil-demonstrativos", label: "Demonstrativos contábeis", para: "/contabil/demonstrativos", icone: "demonstrativo" }
+    );
+  }
   const certUrgentes = (svc) => svc.certificados().lista.filter((d) => d.situacao.status === "vencido" || d.situacao.status === "7").length;
   const secoes = [
     { titulo: "Contábil", itens: contabil },
@@ -43,13 +52,10 @@ export function montarMenu(pode, ehAdmin) {
     { titulo: "Departamento Pessoal", itens: modulos("Departamento Pessoal") },
     // Departamento Cadastro: o número ao lado é o que venceu ou vence em até 7 dias
     { titulo: "Departamento Cadastro", itens: pode("mod-vencimentos") ? [
-      { id: "dep-buscar", label: "Buscar empresa (CNPJ)", para: "/departamento-cadastro/buscar", icone: "empresa" },
       { id: "dep-empresas", label: "Empresas", para: "/departamento-cadastro/empresas", icone: "empresa" },
       { id: "dep-certidoes", label: "Certidões", para: "/departamento-cadastro/certidoes", icone: "certidao", contador: depCadastro.urgentes("certidoes") },
       { id: "dep-certificados", label: "Certificados digitais", para: "/departamento-cadastro/certificados", icone: "cadeado", contador: certUrgentes(depCadastro) },
       { id: "dep-alvaras", label: "Alvarás", para: "/departamento-cadastro/alvaras", icone: "alvara", contador: depCadastro.urgentes("alvaras") },
-      { id: "dep-faturamentos", label: "Faturamentos", para: "/departamento-cadastro/faturamentos", icone: "faturamento" },
-      { id: "dep-demonstrativos", label: "Demonstrativos contábeis", para: "/departamento-cadastro/demonstrativos", icone: "demonstrativo" },
       { id: "dep-importar", label: "Importar e demonstração", para: "/departamento-cadastro/importar", icone: "importar" }
     ] : [] },
     // Em Dia: tela em React (a grade simples); o módulo antigo saiu

@@ -163,6 +163,52 @@ function fabrica(R) {
   }
 
   /**
+   * Obtém o nome do funcionário na importação da folha de presença, na ordem:
+   * 1. do campo amarelo B3;
+   * 2. de C3 a J3 (ignorando a dica "← escreva…");
+   * 3. do rótulo A3 ("Funcionário: Nome");
+   * 4. do nome da aba, exceto nomes padrão como "01 Funcionário" ou "Funcionário (2)".
+   */
+  function nomeDaFolha(rows, aba) {
+    rows = rows || [];
+    var r2 = rows[2] || [];
+    var ehDica = function (s) { return /^←?\s*escreva/i.test(String(s || "").trim()); };
+
+    // 1. do campo amarelo B3
+    var b3 = String(r2[1] !== null && r2[1] !== undefined ? r2[1] : "").trim();
+    if (b3 && !ehDica(b3)) return b3;
+
+    // 2. de C3 a J3 (ignorando a dica "← escreva…")
+    for (var c = 2; c <= 9; c++) {
+      var v = String(r2[c] !== null && r2[c] !== undefined ? r2[c] : "").trim();
+      if (v && !ehDica(v)) return v;
+    }
+
+    // 3. do rótulo A3 ("Funcionário: Nome")
+    var a3 = String(r2[0] !== null && r2[0] !== undefined ? r2[0] : "").trim();
+    var mA3 = a3.match(/^funcion[aá]rio\s*:\s*(.+)$/i);
+    if (mA3) {
+      var nomeA3 = mA3[1].trim();
+      if (nomeA3 && !ehDica(nomeA3)) return nomeA3;
+    }
+
+    // 4. do nome da aba, exceto nomes padrão como "01 Funcionário" ou "Funcionário (2)"
+    if (aba) {
+      var strAba = String(aba).trim();
+      var ehPadrao = /^(?:\d+\s+funcion[aá]rio|funcion[aá]rio(?:\s*\(\d+\)|\s+\d+)?|folha(?:\s*\d+)?)$/i.test(strAba);
+      if (!ehPadrao) {
+        var mNum = strAba.match(/^\d+\s+(.+)$/);
+        var limpa = mNum ? mNum[1].trim() : strAba;
+        if (!/^(?:funcion[aá]rio|folha)(?:\s*\(\d+\)|\s+\d+)?$/i.test(limpa)) {
+          return limpa;
+        }
+      }
+    }
+
+    return "";
+  }
+
+  /**
    * Lê a planilha preenchida (workbook do SheetJS). Devolve
    * {empresa, cnpj, mes, folhas:[{aba, id, nome, funcao, quadro, dias:{n:{e1,s1,e2,s2,oc,obs}}, avisos:[]}], avisos:[]}.
    */
@@ -180,7 +226,7 @@ function fabrica(R) {
       var rows = XLSX.utils.sheet_to_json(wb.Sheets[aba], { header: 1, raw: true, defval: null });
       var cab = (rows[L0 - 2] || []).map(function (x) { return R.normalizarNome(x); });
       if (cab[2] !== "ENTRADA" || cab[5] !== "SAIDA") { out.avisos.push("Aba \"" + aba + "\" ignorada: não está no formato da folha de presença."); return; }
-      var nome = String((rows[2] || [])[1] || "").trim();
+      var nome = nomeDaFolha(rows, aba);
       var idCel = String((rows[0] || [])[10] || "");
       var f = { aba: aba, id: idCel.indexOf("id:") === 0 ? idCel.slice(3) : "", nome: nome, funcao: String((rows[3] || [])[1] || "").trim(),
         quadro: String((rows[4] || [])[1] || "").trim(), dias: {}, avisos: [] };
@@ -196,14 +242,18 @@ function fabrica(R) {
         if (!vazio) { f.dias[n] = d; algum = true; }
       }
       if (!nome && !algum) return;   // aba sobrando, em branco
-      if (!nome) f.avisos.push("Aba sem o nome do funcionário.");
+      if (!nome) f.avisos.push("a aba tem horários, mas não tem o nome do funcionário. Escreva o nome no campo amarelo Funcionário (célula B3) e importe de novo.");
       out.folhas.push(f);
     });
     if (!out.folhas.length) out.avisos.push("Nenhuma folha preenchida encontrada na planilha.");
     return out;
   }
 
-  return { MARCA: MARCA, gerar: gerar, ler: ler, nomeAba: nomeAba, mesDoSerial: mesDoSerial, ocorrencia: ocorrencia };
+  return { MARCA: MARCA, gerar: gerar, ler: ler, nomeAba: nomeAba, mesDoSerial: mesDoSerial, ocorrencia: ocorrencia, nomeDaFolha: nomeDaFolha };
+}
+export function nomeDaFolha(rows, aba) {
+  return P.nomeDaFolha(rows, aba);
 }
 const P = fabrica(R);
 export default P;
+

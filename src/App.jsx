@@ -9,7 +9,8 @@ import Integracao from "./paginas/Integracao.jsx";
 import Conta from "./paginas/Conta.jsx";
 import Cadastro from "./paginas/Cadastro.jsx";
 import Conciliacao from "./paginas/Conciliacao.jsx";
-import DepCadastro from "./paginas/DepCadastro.jsx";
+import DepCadastro, { Faturamentos, Demonstrativos } from "./paginas/DepCadastro.jsx";
+import Empresas from "./componentes/depCadastro/Empresas.jsx";
 import EmDia from "./paginas/EmDia.jsx";
 import Lucros from "./paginas/Lucros.jsx";
 import Fechamento from "./paginas/Fechamento.jsx";
@@ -56,6 +57,10 @@ export default function App() {
             <Route path="conta/:id" element={<SoArea area="integracao"><Conta /></SoArea>} />
             <Route path="cadastro/:id" element={<SoArea area="integracao"><Cadastro /></SoArea>} />
             <Route path="departamento-cadastro/:secao" element={<SoArea area="mod-vencimentos"><DepCadastro /></SoArea>} />
+            <Route path="empresas" element={<SoArea area="mod-vencimentos"><Empresas /></SoArea>} />
+            <Route path="buscar" element={<Navigate to="/empresas" replace />} />
+            <Route path="contabil/faturamentos" element={<SoArea area="contabil-lucros"><Faturamentos /></SoArea>} />
+            <Route path="contabil/demonstrativos" element={<SoArea area="contabil-lucros"><Demonstrativos /></SoArea>} />
             <Route path="em-dia" element={<SoArea area="mod-em-dia"><EmDia /></SoArea>} />
             <Route path="lucros" element={<SoArea area="contabil-lucros"><Lucros secao="distribuicoes" /></SoArea>} />
             <Route path="reinf" element={<SoArea area="contabil-lucros"><Lucros secao="reinf" /></SoArea>} />
