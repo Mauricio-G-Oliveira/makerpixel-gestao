@@ -3,10 +3,10 @@ const assert = require("node:assert/strict");
 const C = require("../src/legado/conciliacao.js");
 
 const planilha = [
-  ["FAN METAL - CONTAS PAGAS - JULHO/2026"],
+  ["EMPRESA EXEMPLO LTDA - CONTAS PAGAS - JULHO/2026"],
   [],
   ["Fornecedor", "CNPJ Fornecedor", "Nº NF", "Vencimento", "Data Pagamento", "Valor Original", "Valor Pago"],
-  ["ELETROCAL INDUSTRIA E COMERCIO LTDA", "83.060.012/0004-81", "12345", "10/07/2026", "13/07/2026", "30.412,22", "30.412,22"],
+  ["ELETROCAL INDUSTRIA E COMERCIO LTDA", "44.555.666/0004-24", "12345", "10/07/2026", "13/07/2026", "30.412,22", "30.412,22"],
   ["TRAMONTINA ELETRIK S.A.", "", "555", "13/07/2026", "13/07/2026", "4.822,39", "4.822,39"],
   ["SOPRANO INDUSTRIA E LTDA", "", "777", "13/07/2026", "13/07/2026", "1.000,00", "1.000,00"],
   ["BLUMENAU ILUMINACAO", "", "888", "13/07/2026", "13/07/2026", "1.000,00", "1.000,00"],
@@ -57,7 +57,7 @@ describe("cruzamento com o extrato", () => {
     assert.equal(linhas.find((l) => l.status === "so_sistema").sistema.nome, "FORNECEDOR QUE NAO SAIU");
   });
   test("CNPJ no histórico também confirma o fornecedor", () => {
-    assert.ok(C.nomeConfere({ desc: "TED 83060012000481" }, { nome: "OUTRO NOME", cpf: "83.060.012/0004-81" }));
+    assert.ok(C.nomeConfere({ desc: "TED 44555666000424" }, { nome: "OUTRO NOME", cpf: "44.555.666/0004-24" }));
     assert.ok(!C.nomeConfere({ desc: "PAGAMENTO DE BOLETO" }, { nome: "ELETROCAL LTDA", cpf: "" }));
   });
   test("CSV para o Excel", () => {

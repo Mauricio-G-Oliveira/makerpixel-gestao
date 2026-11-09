@@ -1,9 +1,7 @@
 /*
- * integracao.js — integração contábil com o SCI Único.
+ * integracao.js — integração com layout padrão do sistema contábil.
  *
- * Porte fiel das macros da planilha "Setembro_v19-CORRETA.xlsm"
- * (Module1, "CELESP - Integracao Contabil v8-v10"). Cada função cita a
- * rotina VBA de origem. Quando o VBA tem um comportamento estranho, ele foi
+ * Cada função cita a rotina de integração de origem. Quando o VBA tem um comportamento estranho, ele foi
  * mantido igual (para o TXT sair idêntico ao da planilha) e marcado com
  * "COMPORTAMENTO DO VBA".
  *
@@ -250,7 +248,7 @@
 
   // ------------------------------------------------ tabelas de referência
 
-  /** Tabela de Unidades (colunas: nome, CNPJ, código SCI) → info da unidade. */
+  /** Tabela de Unidades (colunas: nome, CNPJ, código contábil) → info da unidade. */
   function infoUnidade(tabela, nome) {
     var k = chave(nome);
     for (var i = 0; i < (tabela || []).length; i++) {

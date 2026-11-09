@@ -3,7 +3,7 @@
 <div align="center">
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00E5FF?style=for-the-badge&logo=github&logoColor=black)](https://mauricio-g-oliveira.github.io/makerpixel-gestao/)
-[![Backend](https://img.shields.io/badge/Backend-Java%2021%20%7C%20Spring%20Boot%203-F80000?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Backend API](https://img.shields.io/badge/Backend%20API-makerpixel--gestao--api-F80000?style=for-the-badge&logo=springboot&logoColor=white)](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao-api)
 [![Database](https://img.shields.io/badge/PostgreSQL-16%20%7C%20RLS%20Enabled-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
@@ -14,9 +14,9 @@
 
 <br />
 
-**Solução corporativa SaaS multi-tenant desenvolvida pela MakerPixel (Tubarão/SC) voltada para escritórios de contabilidade. Trabalha em sincronia com os principais ERPs contábeis do mercado (SCI Único, Acessórias), eliminando retrabalho de planilhas, importando extratos bancários multi-banco, auditando limites do MEI/Simples Nacional, consultando a Receita Federal em tempo real e monitorando prazos com antecedência.**
+**Solução corporativa SaaS multi-tenant desenvolvida pela MakerPixel (Tubarão/SC) voltada para escritórios de contabilidade. Trabalha ao lado do sistema contábil e de obrigações do escritório, eliminando retrabalho de planilhas, importando extratos bancários multi-banco, auditando limites do MEI/Simples Nacional, consultando a Receita Federal em tempo real e monitorando prazos com antecedência.**
 
-[Acessar Demonstração Online](https://mauricio-g-oliveira.github.io/makerpixel-gestao/) • [Modelo de Governança Git](docs/GIT.md) • [Repositório GitHub](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao)
+[Acessar Demonstração Online](https://mauricio-g-oliveira.github.io/makerpixel-gestao/) • [Repositório da API Backend (Java/Spring)](https://github.com/Mauricio-G-Oliveira/makerpixel-gestao-api) • [Modelo de Governança Git](docs/GIT.md)
 
 </div>
 
@@ -50,7 +50,7 @@ flowchart TD
         UI1[Painel MakerPixel SaaS: Gestão de Escritórios & Trials]
         UI2[Ficha Cadastral: Busca Receita & QSA]
         UI3[Painel de Limites MEI & Simples Nacional 2026]
-        UI4[Módulos Contábeis: Integração SCI Único, Conciliação, Fiscal, Lucros]
+        UI4[Módulos Contábeis: Integração Contábil, Conciliação, Fiscal, Lucros]
         SW[Service Worker PWA Offline]
     end
 
@@ -110,10 +110,10 @@ flowchart TD
 - Projeção estatística apontando o mês estimado de desenquadramento ("No ritmo atual, passa em novembro").
 - Exibição das consequências tributárias reais (exclusão no ano seguinte vs desenquadramento retroativo).
 
-### 4. 🔄 Integração Contábil & SCI Único (`/integracao`)
+### 4. 🔄 Integração Contábil (`/integracao`)
 - Leitura automatizada de extratos bancários em formato OFX, PDF e Excel.
 - Reconhecimento inteligente de contas contábeis e distribuição por unidade de negócio.
-- Exportação homologada de arquivos relacionais e posicionais para importação no SCI Único.
+- Exportação homologada de arquivos relacionais e posicionais para importação no layout padrão do sistema contábil.
 
 ### 5. ⚖️ Conciliação Bancária (`/conciliacao`)
 - Cruzamento automatizado de extrato bancário contra lançamentos e planilhas avulsas, com tolerância configurável de compensação bancária e histórico de divergências.

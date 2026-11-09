@@ -234,7 +234,7 @@ describe("sócios, Lucro Real, baixa e cadastro do sistema antigo", () => {
   });
 });
 
-describe("planilha de empresas do Acessórias", () => {
+describe("planilha de empresas do sistema de obrigações", () => {
   const CAB_ACS = ["ID Empresa", "CNPJ / CPF / CAEPF", "Razão Empresa", "Nome Fantasia", "Apelido e-Contínuo", "Nome Contato", "E-mail Contato", "Fone Contato", "I.E.", "I.E. UF",
     "Alvarás", "Cadastros", "Certificado Digital", "Departamento Contábil", "Departamento Fiscal", "Departamento Pessoal", "Financeiro", "ISS Serviço Municipal", "Recepção", "Retenções", "Societário"];
   const linha = (doc, razao, fant, cont, mail, fone, ie, uf, deptos) => ["", doc, razao, fant, "", cont, mail, fone, ie, uf].concat(deptos.split(""));
@@ -246,7 +246,7 @@ describe("planilha de empresas do Acessórias", () => {
 
   test("lê o modelo: uma empresa por CNPJ, contatos, IEs e departamentos marcados com S", () => {
     const p = plano();
-    assert.equal(p.abas[0].tipo, "acessorias");
+    assert.equal(p.abas[0].tipo, "obrigacoes");
     assert.equal(p.empresas.length, 3);
     const a = p.empresas.find((e) => e.chave === "d:11111111000111");
     assert.deepEqual([a.nome, a.fantasia, a.contato, a.email, a.telefone, a.ie, a.ieUf], ["Alfa Exemplo Ltda", "Alfa", "Ana Exemplo", "ana@exemplo.invalid", "48999990000", "123456789", "SC"]);
@@ -444,7 +444,7 @@ describe("alvarás: grade e planilha de renovação", () => {
   });
   test("planilha de renovação: CNPJ é a chave (filiais com o mesmo nome), grade e reimportação", () => {
     const abas = [{ nome: "ALVARÁS 2026", rows: [["Razão social", "CNPJ", "Cidade", "UF", "ENVIADA TAXAS", "NOME", "RESPONSÁVEL", "MUNICIPAL", "SANITARIO", "BOMBEIRO"],
-      ["Alfa Ltda", "11.111.111/0001-11", "TUBARAO", "SC", "OK ACESSORIAS", "", "ANA", new Date(2026, 11, 31), "DISPENSADO", "22.04.2027"],
+      ["Alfa Ltda", "11.111.111/0001-11", "TUBARAO", "SC", "OK OBRIGACOES", "", "ANA", new Date(2026, 11, 31), "DISPENSADO", "22.04.2027"],
       ["Alfa Ltda", "11.111.111/0002-00", "LAGUNA", "SC", "", "", "ANA", "VENCIDO", "", "NÃO POSSUI"],
       ["Beta Ltda", "22.222.222/0001-22", "TUBARAO", "SC", "", "", "BRUNO", "RENOVADO", "SOLICITADO", ""]] }];
     const p = D.lerPlanilhaCadastro(abas, Core.toIsoDate, 2026);
@@ -461,7 +461,7 @@ describe("alvarás: grade e planilha de renovação", () => {
     assert.deepEqual(D.ALVARAS_GRADE.map((t) => filial.situacoes[t].cor), ["vermelho", "branco", "amarelo"]);
     const matriz = g.linhas.find((l) => l.empresa.documento === "11.111.111/0001-11");
     assert.deepEqual(D.ALVARAS_GRADE.map((t) => matriz.situacoes[t].cor), ["verde", "cinza", "verde"]);
-    assert.equal(matriz.responsavel, "ANA"); assert.equal(matriz.empresa.envioTaxas, "OK ACESSORIAS");
+    assert.equal(matriz.responsavel, "ANA"); assert.equal(matriz.empresa.envioTaxas, "OK OBRIGACOES");
     // nova planilha: municipal da matriz renovado para 2027 (o anterior vai para o histórico); não duplica empresas
     abas[0].rows[1][7] = new Date(2027, 11, 31);
     const r2 = svc.aplicarPlanilha(D.lerPlanilhaCadastro(abas, Core.toIsoDate, 2026));

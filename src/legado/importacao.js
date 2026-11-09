@@ -136,7 +136,7 @@
     });
     Object.keys(porNome).forEach(function (k) {
       var ls = porNome[k];
-      if (ls.length > 1) problemas.push("A Tabela de unidades tem \"" + limpa(ls[0][0]) + "\" " + ls.length + " vezes (códigos SCI " +
+      if (ls.length > 1) problemas.push("A Tabela de unidades tem \"" + limpa(ls[0][0]) + "\" " + ls.length + " vezes (códigos contábeis " +
         ls.map(function (l) { return limpa(l[2]) || "?"; }).join(", ") + "). Só a primeira gera TXT; confira se uma delas é outra unidade com o nome trocado.");
     });
     var faltando = {};

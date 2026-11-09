@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 import { lerLocal, gravarLocal } from "../lib/tema.js";
 
 const RECURSOS = [
-  "Integração contábil com o SCI Único e conciliação bancária",
+  "Integração contábil e conciliação bancária",
   "Distribuição de lucros, IRRF e REINF",
   "Departamento Cadastro: empresas, certidões, alvarás e faturamento",
   "Em Dia: o que cada setor fez no mês",

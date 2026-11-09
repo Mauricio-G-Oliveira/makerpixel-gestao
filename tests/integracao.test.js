@@ -126,8 +126,8 @@ describe("distribuir por unidade", () => {
 
 describe("arquivos TXT", () => {
   const unidades = [
-    { linha: ["Matriz", "00.589.066/0001-69", 158] },
-    { linha: ["Passo Fundo", "00.589.066/0008-35", 160] }
+    { linha: ["Matriz", "11.222.333/0001-81", 158] },
+    { linha: ["Passo Fundo", "11.222.333/0008-58", 160] }
   ];
   const tx = I.coletarTransacoes([fonte([
     L({ data: "2026-09-01", categoria: "Recebimento", unidade: "Passo Fundo", doc: "13693803", nome: "ELETRO VOLTS, LTDA", cpf: "14580324000150", valorNum: 972.92 }),
@@ -142,11 +142,11 @@ describe("arquivos TXT", () => {
     const [cab, linha, fim] = arqs[1].conteudo.split("\r\n");
     assert.equal(cab, I.CABECALHO_TXT.join("\t"));
     assert.equal(linha, ["01/09/2026", "ELETRO VOLTS  LTDA", "14.580.324/0001-50", "627", "13693803", "Passo Fundo", "",
-      "18", "00.589.066/0008-35", "160", "Sicredi 19915-0 Conta 627", "627", "972,92", "3708", "13693803 - ELETRO VOLTS  LTDA"].join("\t"));
+      "18", "11.222.333/0008-58", "160", "Sicredi 19915-0 Conta 627", "627", "972,92", "3708", "13693803 - ELETRO VOLTS  LTDA"].join("\t"));
     assert.equal(fim, "");
   });
 
-  test("SCI Único: CSV com sequência, data AAAAMMDD, CNPJ só dígitos no lado certo", () => {
+  test("Sistema contábil: CSV com sequência, data AAAAMMDD, CNPJ só dígitos no lado certo", () => {
     const [arq] = I.gerarTxtsUnico(dist, unidades, []);
     assert.equal(arq.nome, "UNICO_Passo_Fundo.txt");
     const linhas = arq.conteudo.split("\r\n");
@@ -155,7 +155,7 @@ describe("arquivos TXT", () => {
     assert.equal(linhas[1], '000002,20260901,627,18,972.92,3708,"13693803 - ELETRO VOLTS  LTDA",DCTO13693803,RECEBIMENTO_Passo_Fundo,14580324000150,,,,,,A');
   });
 
-  test("SCI Único com centro de custo acrescenta os rateios D e C", () => {
+  test("Sistema contábil com centro de custo acrescenta os rateios D e C", () => {
     const l = Object.assign({}, dist[0].linhas[0]);
     assert.match(I.linhaUnico(l, 1, "LOTE", "7"), /,D,7,9\.80,C,7,9\.80,A$/);
   });
@@ -221,7 +221,7 @@ describe("arquivos TXT", () => {
     assert.equal(I.contaCaixa([]), "5");
   });
 
-  test("toda linha do Único tem 16 campos (sem centro de custo)", () => {
+  test("toda linha do sistema contábil tem 16 campos (sem centro de custo)", () => {
     const [arq] = I.gerarTxtsUnico(dist, unidades, []);
     arq.conteudo.replace("\uFEFF", "").trim().split("\r\n").forEach((l) => {
       assert.equal(l.match(/("[^"]*"|[^,]*)(,|$)/g).length - 1, 16);
