@@ -1,0 +1,27 @@
+{
+  "id": "mod-exemplo-varejo",
+  "clienteId": "11222333000181",
+  "nome": "Movimento Integrado - Varejo Exemplo",
+  "aba": "Movimento",
+  "linhaInicial": 2,
+  "colunas": {
+    "data": "A",
+    "valor": "B",
+    "entrada": "",
+    "saida": "",
+    "historico": "C",
+    "conta": "D",
+    "unidade": "E",
+    "categoria": "F",
+    "pessoa": "G"
+  },
+  "regrasClassificacao": [
+    { "termo": "ENERGIA", "categoria": "Energia Elétrica" },
+    { "termo": "TARIFA", "categoria": "Tarifas Bancárias" },
+    { "termo": "ALUGUEL", "categoria": "Aluguel e Condomínio" },
+    { "termo": "INTERNET", "categoria": "Telecomunicações" },
+    { "termo": "FORNECEDOR", "categoria": "Compras de Mercadorias" },
+    { "termo": "VENDA", "categoria": "Receita Operacional" },
+    { "termo": "FOLHA", "categoria": "Salários e Ordenados" }
+  ]
+}

@@ -9,6 +9,7 @@ import Icone from "../componentes/Icone.jsx";
 import ImportarPlanilha from "../componentes/contabil/ImportarPlanilha.jsx";
 import ImportarExtratos from "../componentes/contabil/ImportarExtratos.jsx";
 import NovaConta from "../componentes/contabil/NovaConta.jsx";
+import ModalImportadorModelos from "../componentes/contabil/ModalImportadorModelos.jsx";
 import { BotaoArquivo, Mensagem, numero } from "../componentes/contabil/ui.jsx";
 
 /*
@@ -123,6 +124,7 @@ export default function Integracao() {
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn-primario" onClick={() => setJanela("planilha")}>Importar planilha do mês</button>
+          <button type="button" className="btn-contorno" onClick={() => setJanela("modelos")}>Importar com modelos</button>
           <button type="button" className="btn-contorno" onClick={() => setJanela("extratos")}>Importar extratos do banco</button>
           <button type="button" className="btn-contorno" onClick={() => setJanela("conta")}><Icone nome="mais" />Nova conta</button>
         </div>
@@ -203,6 +205,7 @@ export default function Integracao() {
       <ImportarExtratos aberta={janela === "extratos"} aoFechar={() => setJanela("")}
         aoConcluir={(r) => { if (r.contas.length === 1) { aviso(r.msg); navegar("/conta/" + r.contas[0]); } else setMsg({ texto: r.msg, tipo: "info" }); }} />
       <NovaConta aberta={janela === "conta"} aoFechar={() => setJanela("")} aoCriar={(c) => { aviso("Conta criada."); navegar("/conta/" + c.id); }} />
+      <ModalImportadorModelos aberta={janela === "modelos"} aoFechar={() => setJanela("")} />
       {janela === "apagar" && <ApagarTudo aoFechar={() => setJanela("")} />}
     </div>
   );
