@@ -115,18 +115,30 @@ export default function Integracao() {
   const vazio = p.total === 0;
   return (
     <div className="space-y-4 max-w-[1200px]">
-      {/* importar */}
-      <section className="cartao p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="text-[12px] uppercase tracking-wider text-muted font-semibold">Mês</div>
-          <div className="text-[19px] font-semibold">{p.nomeMes}</div>
-          <p className="text-[13.5px] text-muted mt-1 max-w-[620px]">Importe a planilha do mês inteira, ou direto os extratos do banco: cada lançamento vai para a conta certa, sem duplicar, já com a classificação sugerida pelo histórico.</p>
+      {/* Topo do Mês e Ações */}
+      <section className="cartao p-5 sm:p-6 space-y-4">
+        <div>
+          <span className="text-[11.5px] uppercase tracking-wider text-muted font-bold block mb-1">Competência Ativa</span>
+          <div className="text-[22px] font-bold text-ink tracking-tight">{p.nomeMes}</div>
+          <p className="text-[13.5px] text-muted mt-1 max-w-[720px] leading-relaxed">
+            Importe a planilha do mês inteira ou os extratos do banco: cada lançamento vai para a conta certa, sem duplicar, já com a classificação sugerida pelo histórico.
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn-primario" onClick={() => setJanela("planilha")}>Importar planilha do mês</button>
-          <button type="button" className="btn-contorno" onClick={() => setJanela("modelos")}>Importar com modelos</button>
-          <button type="button" className="btn-contorno" onClick={() => setJanela("extratos")}>Importar extratos do banco</button>
-          <button type="button" className="btn-contorno" onClick={() => setJanela("conta")}><Icone nome="mais" />Nova conta</button>
+
+        {/* Barra de Ações com botões bem espaçados */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-1 border-t border-line">
+          <button type="button" className="btn-primario text-[13.5px] py-2 px-3.5" onClick={() => setJanela("planilha")}>
+            Importar planilha do mês
+          </button>
+          <button type="button" className="btn-contorno text-[13.5px] py-2 px-3.5" onClick={() => setJanela("modelos")}>
+            Importar com modelos
+          </button>
+          <button type="button" className="btn-contorno text-[13.5px] py-2 px-3.5" onClick={() => setJanela("extratos")}>
+            Importar extratos do banco
+          </button>
+          <button type="button" className="btn-contorno text-[13.5px] py-2 px-3.5" onClick={() => setJanela("conta")}>
+            <Icone nome="mais" /> Nova conta
+          </button>
         </div>
       </section>
 
