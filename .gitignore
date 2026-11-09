@@ -11,3 +11,5 @@ dist/
 *.xml
 *.csv
 *EXTRATO*.txt
+*.mp4
+*.aiff
