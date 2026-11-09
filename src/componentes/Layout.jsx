@@ -120,7 +120,7 @@ export default function Layout() {
     }
     return local.pathname === "/" ? { sub: "Visão geral", titulo: "Início" } : { sub: "", titulo: "" };
   }, [secoes, local.pathname]);
-  useEffect(() => { document.title = (titulo.titulo ? titulo.titulo + " – " : "") + "MakerPixel Techsystem"; }, [titulo]);
+  useEffect(() => { document.title = (titulo.titulo ? titulo.titulo + " – " : "") + "Central Contábil"; }, [titulo]);
 
   const ehTeste = usuario && (usuario.teste || usuario.email === AuthCore.TESTE_EMAIL);
   const naModulo = local.pathname.indexOf("/modulo/") === 0;
@@ -129,8 +129,8 @@ export default function Layout() {
   const menu = (
     <nav aria-label="Menu principal" className="flex flex-col h-full">
       <div className={"flex items-center gap-2.5 px-3.5 pt-4 pb-3 " + (recolhido ? "flex-col" : "")}>
-        <img src="./icons/makerpixel-simbolo.svg" alt="MakerPixel" className="w-8 h-8 shrink-0" />
-        {!recolhido && <div className="flex-1 leading-tight min-w-0"><strong className="block text-[15px] tracking-tight truncate text-brand font-bold">MakerPixel</strong><span className="text-[12.5px] text-muted">Techsystem</span></div>}
+        <img src="./icons/central-contabil-simbolo.svg" alt="Central Contábil" className="w-8 h-8 shrink-0" />
+        {!recolhido && <div className="flex-1 leading-tight min-w-0"><strong className="block text-[15px] tracking-tight truncate text-brand font-bold">Central</strong><span className="text-[12px] font-semibold text-ink-2">Contábil</span></div>}
         <button type="button" onClick={() => setRecolhido(!recolhido)} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}
           className={"hidden lg:inline-flex btn-fantasma h-8 w-8 p-0 border border-line " + (recolhido ? "-scale-x-100" : "")}><Icone nome="recolher" /></button>
       </div>
@@ -210,7 +210,7 @@ export default function Layout() {
         {/* Faixa de Suporte 24h */}
         {suporteAtivo && (
           <div className="bg-amber-500 text-black px-4 sm:px-8 py-1.5 text-xs font-bold flex items-center justify-between gap-3">
-            <span>🛡️ Suporte MakerPixel acessando o escritório (somente leitura · sessão de 24h)</span>
+            <span>🛡️ Suporte Central Contábil acessando o escritório (somente leitura · sessão de 24h)</span>
             <button type="button" onClick={() => { revogarSuporte(); setSuporteAtivo(false); }} className="underline hover:text-white">Encerrar acesso do suporte</button>
           </div>
         )}
@@ -218,7 +218,7 @@ export default function Layout() {
         {/* Faixa de Suspensão */}
         {escritorio?.situacao === "SUSPENSO" && (
           <div className="bg-debit text-white px-4 sm:px-8 py-2 text-xs sm:text-sm font-bold flex items-center justify-between gap-3">
-            <span>⚠️ Acesso do escritório suspenso. Fale com a MakerPixel para regularizar.</span>
+            <span>⚠️ Acesso do escritório suspenso. Fale com a Central Contábil para regularizar.</span>
             <a href={linkContratarWhatsApp(escritorio)} target="_blank" rel="noreferrer" className="bg-white text-debit px-2.5 py-0.5 rounded text-xs font-bold">Falar no WhatsApp</a>
           </div>
         )}
@@ -232,11 +232,11 @@ export default function Layout() {
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               to="/admin-makerpixel"
-              title="Clique para alternar o escritório ou gerenciar planos e testes no Painel MakerPixel"
+              title="Clique para alternar o escritório ou gerenciar planos e testes"
               className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand-soft/40 px-3 py-1 text-xs font-semibold text-brand hover:border-brand-fill transition-colors"
             >
               <span>🏢</span>
-              <span className="max-w-[150px] truncate">{escritorio ? (escritorio.nomeFantasia || escritorio.razaoSocial) : "MakerPixel Contábil"}</span>
+              <span className="max-w-[150px] truncate">{escritorio ? (escritorio.nomeFantasia || escritorio.razaoSocial) : "Central Contábil"}</span>
               <span className="text-[10px] opacity-75">▾</span>
             </Link>
             {comMes && <Competencia />}
@@ -266,7 +266,7 @@ export default function Layout() {
                 rel="noreferrer"
                 className="btn-primario h-11 flex items-center justify-center gap-2 font-bold"
               >
-                Falar com a MakerPixel no WhatsApp
+                Falar com a Central Contábil no WhatsApp
               </a>
               <button
                 type="button"
@@ -281,7 +281,7 @@ export default function Layout() {
       )}
       <Suporte compacto={naModulo} contexto={() => ({
         tela: (titulo.sub && titulo.sub !== titulo.titulo ? titulo.sub + " › " : "") + titulo.titulo,
-        usuario: usuario ? { nome: usuario.nome, email: usuario.email } : null, versao: VERSAO, sistema: "MakerPixel Techsystem"
+        usuario: usuario ? { nome: usuario.nome, email: usuario.email } : null, versao: VERSAO, sistema: "Central Contábil"
       })} />
     </div>
   );
