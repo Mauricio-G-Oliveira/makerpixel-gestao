@@ -1,25 +1,288 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Conciliacao as RegrasConc, Core, Extratos, Store } from "../lib/legado.js";
 import { nomeDaFonte } from "../lib/contabil.mjs";
 import { calcular, gruposConferidos, gruposDaConta, grupoManual, mesesDoExtrato, prepararExtrato, salvarGruposDaConta } from "../lib/conciliar.mjs";
 import { useContabil } from "../lib/useContabil.js";
+import { useDepCadastro } from "../lib/useDepCadastro.js";
+import { useAuth } from "../lib/auth.jsx";
+import { criarFiltro } from "../lib/carteira.mjs";
+import { criarServicoConciliacao } from "../lib/conciliacaoServidor.mjs";
+import { aplicarPerfilConciliacao } from "../lib/regrasConciliacao.mjs";
 import { baixarArquivos, lerArquivoExtrato } from "../lib/leitores.js";
 import { useAvisos } from "../componentes/Avisos.jsx";
 import { BotaoArquivo, Campo, Mensagem, Segmentado } from "../componentes/contabil/ui.jsx";
 import { BarraSelecao, JanelaObs, Resumo, Tabela } from "../componentes/conciliacao/Resultado.jsx";
 import ConciliacaoAvulsa from "../componentes/conciliacao/Avulsa.jsx";
+import ModalPerfilConciliacao from "../componentes/conciliacao/ModalPerfilConciliacao.jsx";
 
 /*
- * Conciliação. Por conta: o extrato do banco contra os lançamentos da conta no sistema, pelo valor,
- * pelo sinal (C/D) e pela data (com tolerância). O que a regra não casa sozinha a pessoa junta à mão
- * ou marca como conferido; isso fica guardado por conta e vale nas próximas vezes.
- * Extrato × planilha (avulsa): componentes/conciliacao/Avulsa.jsx.
+ * Conciliação bancária:
+ * 1. Salva no servidor/local com controle de versão e lista "Conciliações do mês".
+ * 2. Regras por cliente (perfil com tolerância, palavras-chave e lote).
+ * 3. Filtrada pela carteira do usuário (admin vê tudo).
  */
 const POR_PAGINA = 400;
-// o extrato lido fica na memória enquanto o sistema está aberto: sair da tela e voltar não perde nada
-const memoria = { contaId: "", lido: null, tolerancia: 3, modo: "conta" };
+const memoria = { contaId: "", lido: null, tolerancia: 2, modo: "doMes", empresaId: "", competencia: "" };
 
+function mesPadrao() {
+  const d = new Date();
+  const m = d.getMonth(); // mês anterior
+  const y = d.getFullYear() - (m === 0 ? 1 : 0);
+  const mesNum = m === 0 ? 12 : m;
+  return `${y}-${String(mesNum).padStart(2, "0")}`;
+}
+
+export default function Conciliacao() {
+  const [modo, setModo] = useState(memoria.modo);
+  const { usuario } = useAuth();
+  const [svcCadastro, versaoCad] = useDepCadastro();
+  const { aviso, confirmar } = useAvisos();
+
+  const [competencia, setCompetencia] = useState(() => memoria.competencia || mesPadrao());
+  const [empresaId, setEmpresaId] = useState(memoria.empresaId);
+  const [modalPerfilAberta, setModalPerfilAberta] = useState(false);
+  const [perfilEmpresa, setPerfilEmpresa] = useState(null);
+  const [conciliacoesMes, setConciliacoesMes] = useState([]);
+  const [carregandoMes, setCarregandoMes] = useState(false);
+
+  const servicoServidor = useMemo(() => criarServicoConciliacao({ usuarioAtual: usuario }), [usuario]);
+
+  // Empresas filtradas pela carteira do usuário (admin vê tudo)
+  const todasEmpresas = useMemo(() => svcCadastro.empresas(), [svcCadastro, versaoCad]);
+  const filtroCarteira = useMemo(() => criarFiltro(usuario), [usuario]);
+  const empresasCarteira = useMemo(() => todasEmpresas.filter(filtroCarteira), [todasEmpresas, filtroCarteira]);
+
+  const empresaSelecionada = useMemo(
+    () => empresasCarteira.find((c) => c.id === empresaId) || null,
+    [empresasCarteira, empresaId]
+  );
+
+  // Carrega perfil de conciliação da empresa selecionada
+  useEffect(() => {
+    if (empresaSelecionada && empresaSelecionada.documento) {
+      servicoServidor.obterPerfil(empresaSelecionada.documento).then(setPerfilEmpresa);
+    } else {
+      setPerfilEmpresa(null);
+    }
+  }, [empresaSelecionada, servicoServidor]);
+
+  // Carrega conciliações salvas do mês
+  const carregarConciliacoesDoMes = async () => {
+    setCarregandoMes(true);
+    try {
+      const lista = await servicoServidor.listarPorMes(competencia);
+      setConciliacoesMes(lista);
+    } catch (e) {
+      aviso("Não foi possível carregar as conciliações do mês: " + (e.message || e));
+    } finally {
+      setCarregandoMes(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarConciliacoesDoMes();
+  }, [competencia]);
+
+  const salvarPerfil = async (novoPerfil) => {
+    if (!empresaSelecionada) return;
+    try {
+      const salvo = await servicoServidor.salvarPerfil(empresaSelecionada.documento, novoPerfil);
+      setPerfilEmpresa(salvo);
+      aviso("Regras de conciliação salvas para " + empresaSelecionada.nome + ".");
+    } catch (e) {
+      aviso("Erro ao salvar regras: " + (e.message || e));
+    }
+  };
+
+  return (
+    <div className="space-y-4 max-w-[1400px]">
+      {/* Barra superior de seleção: Empresa (da carteira), Competência e Regras */}
+      <section className="cartao p-4 flex flex-wrap items-center justify-between gap-3 bg-surface border border-line">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="space-y-1">
+            <label className="rotulo text-[12px] block" htmlFor="sel-emp-conc">Empresa (Carteira)</label>
+            <select
+              id="sel-emp-conc"
+              value={empresaId}
+              onChange={(e) => {
+                memoria.empresaId = e.target.value;
+                setEmpresaId(e.target.value);
+              }}
+              className="h-9 max-w-[280px] text-[13.5px] font-medium"
+            >
+              <option value="">Todas as empresas da carteira…</option>
+              {empresasCarteira.map((c) => (
+                <option key={c.id} value={c.id}>{c.nome}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="rotulo text-[12px] block" htmlFor="sel-comp-conc">Competência</label>
+            <input
+              id="sel-comp-conc"
+              type="month"
+              value={competencia}
+              onChange={(e) => {
+                memoria.competencia = e.target.value;
+                setCompetencia(e.target.value);
+              }}
+              className="h-9 w-36 text-[13.5px]"
+            />
+          </div>
+
+          {empresaSelecionada && (
+            <div className="pt-5">
+              <button
+                type="button"
+                className="btn-contorno btn-sm h-9"
+                onClick={() => setModalPerfilAberta(true)}
+              >
+                ⚙ Regras deste cliente
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="pt-2 sm:pt-0">
+          <Segmentado
+            rotulo="Visualização"
+            valor={modo}
+            aoMudar={(m) => {
+              memoria.modo = m;
+              setModo(m);
+            }}
+            opcoes={[
+              ["doMes", "Conciliações do mês"],
+              ["conta", "Conta do sistema"],
+              ["avulsa", "Extrato × planilha"]
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* Visualização 1: Conciliações do mês */}
+      {modo === "doMes" && (
+        <section className="cartao p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-[15px] font-semibold">Conciliações do mês: {competencia}</h3>
+              <p className="text-[13px] text-muted">
+                Status das contas conferidas, quem mexeu por último e continuidade de onde parou.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-fantasma btn-sm"
+              onClick={carregarConciliacoesDoMes}
+            >
+              Atualizar lista
+            </button>
+          </div>
+
+          {carregandoMes && <p className="text-muted text-[13px]">Carregando conciliações…</p>}
+
+          {!carregandoMes && conciliacoesMes.length === 0 && (
+            <div className="p-8 text-center text-muted text-[13.5px] border border-dashed border-line rounded-lg space-y-2">
+              <p>Nenhuma conciliação salva para {competencia} ainda.</p>
+              <p className="text-[12.5px]">
+                Abra a aba <strong>Conta do sistema</strong> ou <strong>Extrato × planilha</strong> para começar a conciliar. O trabalho salva sozinho.
+              </p>
+            </div>
+          )}
+
+          {!carregandoMes && conciliacoesMes.length > 0 && (
+            <div className="overflow-x-auto border border-line rounded-lg">
+              <table className="w-full text-[13.5px]">
+                <thead className="bg-surface-2 text-left text-[12px] uppercase tracking-wide text-muted">
+                  <tr>
+                    <th className="px-4 py-2.5 font-semibold">Empresa / CNPJ</th>
+                    <th className="px-4 py-2.5 font-semibold">Banco e Conta</th>
+                    <th className="px-4 py-2.5 font-semibold">Resumo</th>
+                    <th className="px-4 py-2.5 font-semibold">Última alteração</th>
+                    <th className="px-4 py-2.5 font-semibold text-right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {conciliacoesMes.map((c) => {
+                    let rJson = {};
+                    try { rJson = JSON.parse(c.resumoJson || "{}"); } catch (e) { rJson = {}; }
+                    const emp = todasEmpresas.find((e) => (e.documento || "").replace(/\D/g, "") === c.cnpj);
+
+                    return (
+                      <tr key={c.id} className="hover:bg-surface-2">
+                        <td className="px-4 py-3">
+                          <strong className="block font-medium">{emp ? emp.nome : c.cnpj}</strong>
+                          <span className="text-[12px] text-muted tabular-nums">{c.cnpj}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <strong className="block">{c.banco}</strong>
+                          <span className="text-[12px] text-muted">Ag: {c.agencia || "—"} · C/C: {c.conta}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {rJson.ok !== undefined ? (
+                            <span className="text-[13px]">
+                              <strong className="text-credit">{rJson.ok || 0}</strong> ok,{" "}
+                              <strong className="text-warn">{rJson.so_extrato || 0}</strong> no banco,{" "}
+                              <strong className="text-info">{rJson.so_sistema || 0}</strong> na planilha
+                            </span>
+                          ) : (
+                            <span className="text-muted text-[12.5px]">Em andamento</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-[12.5px] text-muted">
+                          <span className="block text-ink font-medium">{c.ultimoUsuarioNome} (v{c.versao})</span>
+                          <span>{new Date(c.atualizadoEm).toLocaleDateString("pt-BR")} às {new Date(c.atualizadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            type="button"
+                            className="btn-primario btn-sm"
+                            onClick={() => {
+                              if (emp) setEmpresaId(emp.id);
+                              setModo("avulsa");
+                            }}
+                          >
+                            Continuar
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Visualização 2: Conta do sistema */}
+      {modo === "conta" && <ConciliacaoPorConta />}
+
+      {/* Visualização 3: Extrato × Planilha (Avulsa com regras do cliente) */}
+      {modo === "avulsa" && (
+        <ConciliacaoAvulsa
+          empresa={empresaSelecionada}
+          competencia={competencia}
+          perfilCliente={perfilEmpresa}
+        />
+      )}
+
+      {/* Modal de configuração de regras de conciliação por cliente */}
+      <ModalPerfilConciliacao
+        aberta={modalPerfilAberta}
+        cnpj={empresaSelecionada ? empresaSelecionada.documento : ""}
+        empresaNome={empresaSelecionada ? empresaSelecionada.nome : ""}
+        perfilAtual={perfilEmpresa}
+        aoSalvar={salvarPerfil}
+        aoFechar={() => setModalPerfilAberta(false)}
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- Conciliação por conta do sistema
 function ConciliacaoPorConta() {
   const [svc, versao] = useContabil();
   const { aviso, confirmar } = useAvisos();
@@ -32,16 +295,18 @@ function ConciliacaoPorConta() {
   const [selecao, setSelecao] = useState({ ext: {}, sis: {} });
   const [pedido, setPedido] = useState(null);
   const [limite, setLimite] = useState(POR_PAGINA);
-  const [rev, setRev] = useState(0);   // grupos manuais mudaram
+  const [rev, setRev] = useState(0);
+
   const setContaId = (v) => { memoria.contaId = v; setContaIdEstado(v); setSelecao({ ext: {}, sis: {} }); };
   const setLido = (v) => { memoria.lido = v; setLidoEstado(v); setSelecao({ ext: {}, sis: {} }); setLimite(POR_PAGINA); };
   const setTol = (v) => { memoria.tolerancia = v; setTolEstado(v); };
 
   const grupos = useMemo(() => gruposDaConta(Store, contaId), [contaId, rev, versao]);   // eslint-disable-line
-  const sistema = useMemo(() => {   // lançamentos da conta em todos os meses que o extrato cobre (não só o mês do topo)
+  const sistema = useMemo(() => {
     if (!lido || !contaId) return [];
     return mesesDoExtrato(lido.itens).reduce((l, m) => l.concat(svc.lancamentos(contaId, m)), []);
   }, [svc, lido, contaId, versao]);   // eslint-disable-line
+
   const r = useMemo(() => (lido && contaId ? calcular({ Core, Conciliacao: RegrasConc, extrato: lido.itens, sistema, grupos, tolerancia, filtro, avulso: false }) : null),
     [lido, contaId, sistema, grupos, tolerancia, filtro]);
 
@@ -62,18 +327,20 @@ function ConciliacaoPorConta() {
     setLido({ itens: prepararExtrato(l.itens, file.name), arquivo: file.name, formato: l.formato, numeroConta: l.numeroConta });
     setMsg({ texto: l.itens.length + " movimentação(ões) lidas (" + l.formato + (l.numeroConta ? ", conta " + l.numeroConta : "") + ")." + conf + (avisos.length ? " " + avisos.join(" ") : ""), tipo: avisos.length ? "aviso" : "info" });
   };
+
   const gravarGrupos = (g) => { salvarGruposDaConta(Store, contaId, g); setRev((x) => x + 1); setSelecao({ ext: {}, sis: {} }); };
   const alternar = (lado, chave) => setSelecao((s) => {
     const n = { ext: Object.assign({}, s.ext), sis: Object.assign({}, s.sis) };
     if (n[lado][chave]) delete n[lado][chave]; else n[lado][chave] = true;
     return n;
   });
-  // a seleção só vale para o que ainda está pendente na tela
+
   const vivos = useMemo(() => {
     const v = { ext: [], sis: [] };
     if (r) r.linhas.forEach((l) => { if (l.lado && selecao[l.lado][l.chave]) v[l.lado].push(l.chave); });
     return v;
   }, [r, selecao]);
+
   const juntar = (dif) => {
     const fazer = (obs) => { gravarGrupos(grupos.concat(grupoManual(vivos.ext, vivos.sis, obs))); setPedido(null); aviso("Conciliado à mão.", { desfazer: () => gravarGrupos(grupos) }); };
     if (dif === 0) { fazer(""); return; }
@@ -98,10 +365,11 @@ function ConciliacaoPorConta() {
 
   const meses = lido ? mesesDoExtrato(lido.itens) : [];
   const conta = contas.find((c) => c.id === contaId);
+
   return (
     <div className="space-y-4">
       <section className="cartao p-4 sm:p-5 space-y-4">
-        <p className="text-[13.5px] text-muted max-w-[760px]">Aceita PDF, OFX, TXT do Sicoob, CSV e planilha. Cada movimentação do banco é cruzada com os lançamentos da conta pelo valor, pelo sinal (C/D) e pela data. Sem conta escolhida, ela é reconhecida pelo número do extrato.</p>
+        <p className="text-[13.5px] text-muted max-w-[760px]">Aceita PDF, OFX, TXT, CSV e planilha. Cada movimentação do banco é cruzada com os lançamentos da conta pelo valor, pelo sinal (C/D) e pela data. Sem conta escolhida, ela é reconhecida pelo número do extrato.</p>
         <div className="grid sm:grid-cols-[minmax(0,1fr)_auto_140px] gap-3 items-end">
           <Campo rotulo="Conta" id="conc-conta">
             <select id="conc-conta" value={contaId} onChange={(e) => setContaId(e.target.value)}>
@@ -134,19 +402,6 @@ function ConciliacaoPorConta() {
           aoJuntar={juntar} aoConferir={conferir} aoCancelar={() => setSelecao({ ext: {}, sis: {} })} />
       </>)}
       <JanelaObs pedido={pedido} aoFechar={() => setPedido(null)} />
-    </div>
-  );
-}
-
-export default function Conciliacao() {
-  const [modo, setModo] = useState(memoria.modo);
-  return (
-    <div className="space-y-4 max-w-[1400px]">
-      <div className="max-w-[460px]">
-        <Segmentado rotulo="Tipo de conciliação" valor={modo} aoMudar={(m) => { memoria.modo = m; setModo(m); }}
-          opcoes={[["conta", "Conta do sistema"], ["avulsa", "Extrato × planilha"]]} />
-      </div>
-      {modo === "conta" ? <ConciliacaoPorConta /> : <ConciliacaoAvulsa />}
     </div>
   );
 }
