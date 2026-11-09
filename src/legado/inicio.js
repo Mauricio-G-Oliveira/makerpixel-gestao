@@ -438,9 +438,9 @@
 
   /** As ferramentas, por setor, com o que cada uma faz (o texto da capa). */
   var SETORES_CAPA = [
-    { id: "contabil", nome: "Contábil", texto: "Do extrato do banco ao lançamento no Único.", ferramentas: [
-      { tab: "master", area: "integracao", icone: "master", nome: "Integração contábil", resumo: "Os lançamentos do mês classificados e prontos para o SCI Único.",
-        itens: ["Importa a planilha do mês e os extratos (PDF, OFX, TXT, CSV)", "Classifica por categoria, unidade e natureza, com sugestões", "Distribui por unidade e gera os TXTs do Único"] },
+    { id: "contabil", nome: "Contábil", texto: "Do extrato do banco ao lançamento no sistema contábil.", ferramentas: [
+      { tab: "master", area: "integracao", icone: "master", nome: "Integração contábil", resumo: "Os lançamentos do mês classificados e prontos para o sistema contábil.",
+        itens: ["Importa a planilha do mês e os extratos (PDF, OFX, TXT, CSV)", "Classifica por categoria, unidade e natureza, com sugestões", "Distribui por unidade e gera os TXTs de importação"] },
       { tab: "conciliacao", area: "conciliacao", icone: "conciliacao", nome: "Conciliação", resumo: "Confere o extrato do banco com o que foi lançado.",
         itens: ["Cruza cada movimento por valor, sinal e data", "Extrato × planilha de clientes e fornecedores ou XML de NF-e", "Concilia à mão, marca conferido e exporta o resultado"] },
       { tab: "fechamento", area: "contabil-lucros", icone: "fechamento", nome: "Fechamento contábil", resumo: "Qual empresa já teve o mês fechado, por responsável.",

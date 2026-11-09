@@ -151,7 +151,7 @@ export default function Integracao() {
           {[
             ["Distribuir por unidade", "Monta as abas de unidade com as contas de débito e crédito.", distribuir],
             ["Gerar TXTs (formato atual)", "Um arquivo por unidade e categoria, separado por tabulação.", () => gerar("atual")],
-            ["Gerar TXTs (SCI Único)", "Um arquivo por unidade no layout de importação do Único.", () => gerar("unico")]
+            ["Gerar TXTs (sistema contábil)", "Um arquivo por unidade no layout padrão do sistema contábil.", () => gerar("unico")]
           ].map(([t, d, f]) => (
             <button key={t} type="button" onClick={f} disabled={vazio}
               className="text-left rounded-xl border border-line bg-surface-2 hover:border-brand-fill px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed">

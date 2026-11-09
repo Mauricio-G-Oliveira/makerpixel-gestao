@@ -19,8 +19,8 @@ function planilhaFicticia() {
       lin("", "linha solta classificada", "10,00C", "Recebimento", "Matriz"),
       lin("31/07/2026", "ESTORNO", "5,00C", "Recebimento", "Matriz")] },
     { nome: "SICOOB  58.289-1 Conta 7486", rows: [CAB_BANCO, lin("10/08/2026", "PIX", "2.29598C", "Recebimento", "Ciciuma")] },
-    { nome: "Tabela de Unidades", rows: [["Nome da Unidade ", "CNPJ", "Código SCI"],
-      ["Matriz", "00.589.066/0001-69", 158], ["Chapecó", "00.589.066/0002-40", 23], ["Matriz", "00.589.066/0004-01", 195]] },
+    { nome: "Tabela de Unidades", rows: [["Nome da Unidade ", "CNPJ", "Código contábil"],
+      ["Matriz", "11.222.333/0001-81", 158], ["Chapecó", "11.222.333/0002-62", 23], ["Matriz", "11.222.333/0004-24", 195]] },
     { nome: "Matriz", rows: [["Data", "Banco", "Doc.", "Modelo DOC", "Descricao", "Nome", "CPF/CNPJ", "Categoria", "Natureza", "Conta", "Valor", "Conta Banco", "Cta Debito", "Cta Credito", "HP"]] },
     { nome: "Digitação Compras (Nova-teste)", rows: [["x"]] }
   ];
@@ -75,7 +75,7 @@ describe("planilha inteira", () => {
     const avisos = p.avisos.join("\n");
     assert.match(avisos, /1 lançamento\(s\) têm data fora de Agosto de 2026/);
     assert.match(avisos, /1 linha\(s\) classificadas estão sem data/);
-    assert.match(avisos, /"Matriz" 2 vezes \(códigos SCI 158, 195\)/);
+    assert.match(avisos, /"Matriz" 2 vezes \(códigos contábeis 158, 195\)/);
     assert.match(avisos, /"Criciúma" tem lançamentos, mas não está na Tabela de unidades/);
     assert.match(avisos, /1 valor\(es\) digitados fora do padrão/);
   });

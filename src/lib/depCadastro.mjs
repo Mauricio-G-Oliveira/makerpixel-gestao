@@ -329,23 +329,23 @@ const CAB = {
   alvSanitario: ["sanitario", "alvara sanitario", "vigilancia sanitaria"],
   alvBombeiro: ["bombeiro", "bombeiros", "alvara bombeiro", "alvara dos bombeiros", "corpo de bombeiros"]
 };
-/** Departamentos do Acessórias: coluna com S marca que a empresa é atendida por ele. */
-export const DEPTOS_ACESSORIAS = { "alvaras": "Alvarás", "cadastros": "Cadastros", "certificado digital": "Certificado Digital", "departamento contabil": "Contábil",
+/** Departamentos do sistema de obrigações: coluna com S marca que a empresa é atendida por ele. */
+export const DEPTOS_OBRIGACOES = { "alvaras": "Alvarás", "cadastros": "Cadastros", "certificado digital": "Certificado Digital", "departamento contabil": "Contábil",
   "departamento fiscal": "Fiscal", "departamento pessoal": "Pessoal", "financeiro": "Financeiro", "iss servico municipal": "ISS", "recepcao": "Recepção",
   "retencoes": "Retenções", "societario": "Societário" };
-/** Cabeçalho do Acessórias (modelo de importação): usado na exportação, para o arquivo voltar a entrar no Acessórias ou na Central. */
-export const CAB_ACESSORIAS = ["ID Empresa", "CNPJ / CPF / CAEPF", "Razão Empresa", "Nome Fantasia", "Apelido e-Contínuo", "Nome Contato", "E-mail Contato", "Fone Contato", "I.E.", "I.E. UF",
+/** Cabeçalho do sistema de obrigações (modelo de importação): usado na exportação, para o arquivo voltar a entrar no sistema ou na Central. */
+export const CAB_OBRIGACOES = ["ID Empresa", "CNPJ / CPF / CAEPF", "Razão Empresa", "Nome Fantasia", "Apelido e-Contínuo", "Nome Contato", "E-mail Contato", "Fone Contato", "I.E.", "I.E. UF",
   "Alvarás", "Cadastros", "Certificado Digital", "Departamento Contábil", "Departamento Fiscal", "Departamento Pessoal", "Financeiro", "ISS Serviço Municipal", "Recepção", "Retenções", "Societário"];
-/** Colunas da Central depois das do Acessórias (o Acessórias ignora as que não conhece). */
+/** Colunas da Central depois das do sistema de obrigações (o sistema ignora as que não conhece). */
 export const CAB_CENTRAL = ["Regime", "Segmento", "Cidade", "UF", "Cliente desde", "Saiu em", "Observações"];
 const mesBR = (m) => (/^\d{4}-\d{2}$/.test(txt(m)) ? m.slice(5) + "/" + m.slice(0, 4) : "");
 /**
  * Empresas → linhas da planilha (cabeçalho + uma linha por empresa; contatos e IEs a mais em linhas repetindo a empresa,
- * como o Acessórias pede). Importar o arquivo de volta não duplica nada.
+ * como o sistema de obrigações pede). Importar o arquivo de volta não duplica nada.
  */
 export function planilhaEmpresas(clientes) {
-  const linhas = [CAB_ACESSORIAS.concat(CAB_CENTRAL)];
-  const deptos = CAB_ACESSORIAS.slice(10).map((c) => DEPTOS_ACESSORIAS[normCab(c)]);
+  const linhas = [CAB_OBRIGACOES.concat(CAB_CENTRAL)];
+  const deptos = CAB_OBRIGACOES.slice(10).map((c) => DEPTOS_OBRIGACOES[normCab(c)]);
   (clientes || []).forEach((c) => {
     const contatos = c.contatos && c.contatos.length ? c.contatos : [{ nome: txt(c.contato), email: txt(c.email), telefone: txt(c.telefone) }];
     const ies = c.ies && c.ies.length ? c.ies : [{ ie: txt(c.ie), uf: txt(c.ieUf) }];
@@ -450,16 +450,16 @@ export function lerPlanilhaCadastro(abas, toIsoDate, ano) {
       });
     } else {
       tipo = "empresas";
-      // colunas S/N de departamento (Acessórias): o Acessórias é a fonte, então os dados dela atualizam o que já existe
+      // colunas S/N de departamento (sistema de obrigações): a planilha de obrigações é a fonte, então os dados dela atualizam o que já existe
       const deptos = [];
-      rows[h].forEach((c, i) => { const d = DEPTOS_ACESSORIAS[normCab(c)]; if (d) deptos.push([i, d]); });
-      const acessorias = deptos.length >= 3 || col.fantasia !== undefined && col.ie !== undefined;
-      if (acessorias) tipo = "acessorias";
+      rows[h].forEach((c, i) => { const d = DEPTOS_OBRIGACOES[normCab(c)]; if (d) deptos.push([i, d]); });
+      const ehObrigacoes = deptos.length >= 3 || col.fantasia !== undefined && col.ie !== undefined;
+      if (ehObrigacoes) tipo = "obrigacoes";
       rows.slice(h + 1).forEach((r, i) => {
         if (!r || !txt(get(r, "empresa"))) return;
         const docLinha = txt(get(r, "documento"));
         if (docLinha && !documentoValido(docLinha)) plano.avisos.push("Aba \"" + a.nome + "\", linha " + (h + i + 2) + ": CNPJ/CPF \"" + docLinha + "\" inválido (" + txt(get(r, "empresa")) + ").");
-        if (acessorias) {
+        if (ehObrigacoes) {
           const k = empresa(get(r, "empresa"), docLinha, { codigo: txt(get(r, "codigo")), fantasia: txt(get(r, "fantasia")), apelido: txt(get(r, "apelido")),
             contato: txt(get(r, "contato")), email: txt(get(r, "email")), telefone: txt(get(r, "telefone")), ie: txt(get(r, "ie")), ieUf: txt(get(r, "ieUf")).toUpperCase(),
             regime: regimePeloTexto(get(r, "regime")), cidade: txt(get(r, "cidade")), uf: txt(get(r, "uf")).toUpperCase(),

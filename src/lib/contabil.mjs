@@ -18,7 +18,7 @@ export const MOVIMENTOS = [
 ];
 
 // colunas: usadas quando o cadastro começa do zero, sem planilha. A ordem importa: a integração lê a natureza
-// e a conta (Plano de contas), o Caixa e a conta (Tabela de bancos) e o CNPJ e o código SCI da unidade
+// e a conta (Plano de contas), o Caixa e a conta (Tabela de bancos) e o CNPJ e o código contábil da unidade
 // (Tabela de unidades) pela posição, igual às abas da planilha.
 export const CADASTROS = [
   { id: "cad-clientes", label: "Clientes", sheetName: "Clientes", colunas: ["Nome", "CPF/CNPJ"] },
@@ -26,7 +26,7 @@ export const CADASTROS = [
   { id: "cad-plano", label: "Plano de contas", sheetName: "Plano de Contas", colunas: ["Natureza", "Conta contábil"] },
   { id: "cad-custos", label: "Centro de custos", sheetName: "Centro de Custos", colunas: ["Unidade", "Centro de custo"] },
   { id: "cad-bancos", label: "Tabela de bancos", sheetName: "Tabela de Bancos", colunas: ["Banco", "Descrição", "Conta contábil"] },
-  { id: "cad-unidades", label: "Tabela de unidades", sheetName: "Tabela de Unidades", colunas: ["Unidade", "CNPJ", "Código SCI"] }
+  { id: "cad-unidades", label: "Tabela de unidades", sheetName: "Tabela de Unidades", colunas: ["Unidade", "CNPJ", "Código contábil"] }
 ];
 
 export const BANCOS = ["Sicoob", "Sicredi", "Caixa Econômica", "Banco do Brasil", "Itaú", "Bradesco", "Santander", "Banrisul", "Nubank", "Inter", "Outro"];
@@ -440,7 +440,7 @@ export function criarContabil(deps) {
   function preverTxts() {
     const r = distribuir();
     if (!r) return { erro: "Nenhum lançamento classificado para gerar TXT. Preencha categoria e unidade nas contas bancárias." };
-    if (!tabelaUnidades().length) return { erro: "Falta a Tabela de unidades: abra Cadastros › Tabela de unidades e importe a planilha (ou cadastre à mão). Ela traz o CNPJ e o código SCI de cada unidade, que vão no TXT." };
+    if (!tabelaUnidades().length) return { erro: "Falta a Tabela de unidades: abra Cadastros › Tabela de unidades e importe a planilha (ou cadastre à mão). Ela traz o CNPJ e o código contábil de cada unidade, que vão no TXT." };
     let sugeridos = 0;
     fontesIntegracao().forEach((f) => f.lancamentos.forEach((e) => { if (e.sugerido) sugeridos++; }));
     return { sugeridos, semConta: r.semConta };
@@ -466,7 +466,7 @@ export function criarContabil(deps) {
         }).join("; ")
       : arquivos.map((a) => a.nome).join(", ");
     let msg = "Arquivos gerados: " + destino + ".";
-    if (formato === "unico") msg += " Importe cada arquivo no Único com a empresa indicada.";
+    if (formato === "unico") msg += " Importe cada arquivo no sistema contábil com a empresa indicada.";
     if (r.semConta) msg += " " + r.semConta + " lançamento(s) ficaram de fora: veja o arquivo de pendências.";
     if (foraDaTabela.length) msg += " Sem arquivo por não estarem na Tabela de unidades: " + foraDaTabela.join(", ") + ".";
     return { arquivos, msg };

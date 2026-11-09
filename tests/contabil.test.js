@@ -188,7 +188,7 @@ describe("Master: distribuir e gerar TXT", () => {
   test("TXT pede a Tabela de unidades e gera um arquivo por unidade", () => {
     const { svc, dados } = comDados();
     assert.match(svc.preverTxts().erro, /Falta a Tabela de unidades/);
-    dados["cadastro:cad-unidades"] = [{ nome: "Passo Fundo", linha: ["Passo Fundo", "00.589.066/0008-35", 160] }];
+    dados["cadastro:cad-unidades"] = [{ nome: "Passo Fundo", linha: ["Passo Fundo", "11.222.333/0008-58", 160] }];
     assert.deepEqual(svc.preverTxts(), { sugeridos: 0, semConta: 0 });
     const r = svc.gerarTxts("atual");
     assert.deepEqual(r.arquivos.map((a) => a.nome), ["DESPESA_Passo_Fundo.txt", "RECEBIMENTO_Passo_Fundo.txt"]);
@@ -211,7 +211,7 @@ describe("planilha do mês inteira", () => {
     const plano = Importacao.analisarPlanilha([
       { nome: "SICOOB 24402-3 Conta 643", rows: [cab, ["01/09/2026", "", "PIX", "100,00C", "Recebimento", "Matriz"]] },
       { nome: "ITAU 9 Conta 900", rows: [cab, ["02/09/2026", "", "TED", "50,00C", "", ""]] },
-      { nome: "Tabela de Unidades", rows: [["Unidade", "CNPJ", "Código"], ["Matriz", "00.589.066/0001-69", 158]] }
+      { nome: "Tabela de Unidades", rows: [["Unidade", "CNPJ", "Código"], ["Matriz", "11.222.333/0001-81", 158]] }
     ]);
     const resumo = svc.resumoPlano(plano);
     assert.deepEqual(resumo.linhas.map((l) => [l.nome, l.nova || false, l.qtd]),
