@@ -113,6 +113,9 @@
     if (!u) return null;
     return { id: u.id, nome: u.nome, email: u.email, perfil: u.perfil, areas: u.perfil === "admin" ? IDS_AREAS.slice() : (u.areas || []).slice(),
       ativo: u.ativo !== false, trocarSenha: !!u.trocarSenha, criadoEm: u.criadoEm, atualizadoEm: u.atualizadoEm, ultimoAcesso: u.ultimoAcesso || "",
+      carteiraAutomatica: u.carteiraAutomatica !== undefined ? !!u.carteiraAutomatica : true,
+      setoresCarteira: Array.isArray(u.setoresCarteira) ? u.setoresCarteira.slice() : [],
+      empresasAMais: Array.isArray(u.empresasAMais) ? u.empresasAMais.slice() : [],
       principal: u.email === ADMIN_EMAIL, teste: !!u.teste };
   }
 
@@ -276,8 +279,12 @@
           var areas = (dados.areas || []).filter(function (a) { return IDS_AREAS.indexOf(a) > -1; });
           if (perfil === "usuario" && !areas.length) throw erro("dados", "Marque pelo menos uma área que a pessoa pode acessar.");
           var provisoria = dados.senhaProvisoria || senhaProvisoria();
+          var carteiraAutomatica = dados.carteiraAutomatica !== undefined ? !!dados.carteiraAutomatica : true;
+          var setoresCarteira = Array.isArray(dados.setoresCarteira) ? dados.setoresCarteira : [];
+          var empresasAMais = Array.isArray(dados.empresasAMais) ? dados.empresasAMais : [];
           return gerarHash(provisoria).then(function (h) {
             var u = { id: novoId(), nome: nome, email: email, perfil: perfil, areas: areas, ativo: true, trocarSenha: true,
+              carteiraAutomatica: carteiraAutomatica, setoresCarteira: setoresCarteira, empresasAMais: empresasAMais,
               senha: h, criadoEm: iso(), atualizadoEm: iso() };
             l.push(u);
             return gravar(l).then(function () { return { usuario: publico(u), senhaProvisoria: provisoria }; });
@@ -293,6 +300,9 @@
           var perfil = dados.perfil === "admin" ? "admin" : (dados.perfil === "usuario" ? "usuario" : u.perfil);
           var ativo = dados.ativo === undefined ? u.ativo !== false : !!dados.ativo;
           var areas = dados.areas ? dados.areas.filter(function (a) { return IDS_AREAS.indexOf(a) > -1; }) : (u.areas || []);
+          if (dados.carteiraAutomatica !== undefined) u.carteiraAutomatica = !!dados.carteiraAutomatica;
+          if (dados.setoresCarteira !== undefined) u.setoresCarteira = Array.isArray(dados.setoresCarteira) ? dados.setoresCarteira : [];
+          if (dados.empresasAMais !== undefined) u.empresasAMais = Array.isArray(dados.empresasAMais) ? dados.empresasAMais : [];
           if (u.id === eu.id && (perfil !== "admin" || !ativo)) throw erro("proprio", "Você não pode tirar o seu próprio acesso de administrador.");
           if (u.perfil === "admin" && (perfil !== "admin" || !ativo) && adminsAtivos(l).length <= 1) throw erro("ultimo-admin", "Precisa existir pelo menos um administrador ativo.");
           if (perfil === "usuario" && !areas.length) throw erro("dados", "Marque pelo menos uma área que a pessoa pode acessar.");

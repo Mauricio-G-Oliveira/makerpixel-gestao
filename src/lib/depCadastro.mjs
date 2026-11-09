@@ -10,6 +10,8 @@
 export const CHAVE_DOCS = "painelVencimentos:v1";
 export const CHAVE = "depCadastro:v1";
 
+import { importarPlanilhaResponsaveis } from "./carteira.mjs";
+
 export const TIPOS_CERTIDOES = ["CND Federal", "CND Estadual", "CND Municipal", "CRF FGTS", "CND Trabalhista", "Certificado Digital", "Procuração", "Licença"];
 export const CERTIFICADO = "Certificado Digital";
 export const MODELOS_CERTIFICADO = ["A1", "A3"];
@@ -1237,6 +1239,14 @@ export function criarDepCadastro(deps) {
     hoje, empresas, salvarEmpresa, excluirEmpresa, qtdDocumentos, documentos, certificados, avisos, gradeAlvaras, buscarEmpresas, fichaEmpresa, resumo, urgentes, salvarDocumento, renovar, excluirDocumento,
     faturamentos, definirFaturamento, totalAno, ultimos12, demonstrativos, definirDemonstrativo, progressoDemonstrativos,
     destinoDoPdf: (l) => destinoDoPdf(l, docs().documentos), gravarPdf,
-    notaDaBusca, ordenarPelaBusca, abaDoTipo, quemVeFaturamentos
+    notaDaBusca, ordenarPelaBusca, abaDoTipo, quemVeFaturamentos,
+    importarPlanilhaResponsaveis: (linhas) => {
+      const e = docs();
+      const res = importarPlanilhaResponsaveis(linhas, e.clientes);
+      if (res.atualizadas > 0) {
+        gravar(CHAVE_DOCS, e);
+      }
+      return res;
+    }
   };
 }

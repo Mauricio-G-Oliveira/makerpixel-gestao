@@ -11,6 +11,8 @@ import Icone from "../Icone.jsx";
 import { Campo, Selo, TextoRapido, numero } from "../contabil/ui.jsx";
 import { carregarDemo } from "./Importar.jsx";
 import { Ficha } from "../../paginas/DepCadastro.jsx";
+import { useAuth } from "../../lib/auth.jsx";
+import { criarFiltro } from "../../lib/carteira.mjs";
 
 /*
  * Cadastro geral de empresas: o mesmo cadastro que Certidões, Faturamentos, Demonstrativos e o Em Dia
@@ -182,8 +184,11 @@ export default function Empresas() {
   const [regime, setRegime] = useState("");
   const [matrizes, setMatrizes] = useState(false);
   const [saidas, setSaidas] = useState(false);
+  const { usuario } = useAuth();
   const [form, setForm] = useState(null);   // { editando }
-  const lista = useMemo(() => svc.empresas(), [svc, versao]);   // eslint-disable-line
+  const todasEmpresas = useMemo(() => svc.empresas(), [svc, versao]);   // eslint-disable-line
+  const filtroCarteira = useMemo(() => criarFiltro(usuario), [usuario]);
+  const lista = useMemo(() => todasEmpresas.filter(filtroCarteira), [todasEmpresas, filtroCarteira]);
   const qtdDocs = useMemo(() => svc.qtdDocumentos(), [svc, versao]);   // eslint-disable-line
   const resp = useMemo(() => emDia.todosResponsaveis(), [emDia, versaoEmDia]);   // eslint-disable-line
   const setores = useMemo(() => emDia.setores(), [emDia, versaoEmDia]);   // eslint-disable-line
